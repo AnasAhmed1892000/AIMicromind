@@ -1,13 +1,15 @@
-import { StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import BackgroundWrapper from "@/components/BackgroundWrapper";
 import { Slot } from "expo-router";
 
 const AuthLayout = () => {
   return (
-    <BackgroundWrapper>
-      <Slot />
-    </BackgroundWrapper>
+    <KeyboardAvoidingView behavior="padding">
+      <BackgroundWrapper>
+        <Slot />
+      </BackgroundWrapper>
+    </KeyboardAvoidingView>
   );
 };
 
