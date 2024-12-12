@@ -8,24 +8,39 @@ import HomeLogo from "@/assets/svgs/home-logo.svg";
 import BaseButton from "@/components/Base/BaseButton";
 import { router } from "expo-router";
 
-const login = () => {
+const SignUp = () => {
   const [isloading, setIsLoading] = useState<boolean>(false);
   const validationSchema = Yup.object({
+    name: Yup.string()
+      .min(3, "Name must be at least 3 characters")
+      .required("Name is required"),
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
     password: Yup.string()
       .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password")], "Passwords must match")
+      .required("Confirm password is required"),
   });
-
-  const handleLogin = (values: { email: string; password: string }) => {
+  const handleLogin = (values: {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) => {
     console.log("Login values:", values);
   };
   return (
     <View style={styles.container}>
       <Formik
-        initialValues={{ email: "", password: "" }}
+        initialValues={{
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        }}
         validationSchema={validationSchema}
         onSubmit={handleLogin}
       >
@@ -46,7 +61,25 @@ const login = () => {
             </View>
             <View>
               <View style={styles.form}>
-                {/* Email Input */}
+                <BaseInput
+                  value={values.name}
+                  onChangeText={handleChange("name")}
+                  onBlur={handleBlur("name")}
+                  placeholder="Enter your name"
+                  icon={
+                    <MaterialIcons
+                      name="person-outline"
+                      size={24}
+                      color="#000"
+                    />
+                  }
+                  borderColor={
+                    touched.email && errors.email ? "#FF0000" : "#FFD700"
+                  }
+                />
+                {touched.email && errors.email && (
+                  <Text style={styles.errorText}>{errors.name}</Text>
+                )}
                 <BaseInput
                   value={values.email}
                   onChangeText={handleChange("email")}
@@ -61,8 +94,6 @@ const login = () => {
                 {touched.email && errors.email && (
                   <Text style={styles.errorText}>{errors.email}</Text>
                 )}
-
-                {/* Password Input */}
                 <BaseInput
                   value={values.password}
                   onChangeText={handleChange("password")}
@@ -77,26 +108,26 @@ const login = () => {
                 {touched.password && errors.password && (
                   <Text style={styles.errorText}>{errors.password}</Text>
                 )}
-
-                {/* Forgot Password */}
-
-                {/* Submit Button */}
-              </View>
-              <View
-                style={{
-                  width: "100%",
-                  alignSelf: "flex-end",
-                }}
-              >
-                <TouchableOpacity>
-                  <Text style={styles.forgotPassword}>Forgot Password?</Text>
-                </TouchableOpacity>
+                <BaseInput
+                  value={values.confirmPassword}
+                  onChangeText={handleChange("confirmPassword")}
+                  onBlur={handleBlur("confirmPassword")}
+                  placeholder="Confirm your password"
+                  secureTextEntry
+                  icon={<MaterialIcons name="lock" size={24} color="#000" />}
+                  borderColor={
+                    touched.password && errors.password ? "#FF0000" : "#FFD700"
+                  }
+                />
+                {touched.password && errors.password && (
+                  <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                )}
               </View>
             </View>
             <View style={styles.submit}>
               <BaseButton
-                onPress={() => router.navigate("/(tabs)/home")}
-                text="Login"
+                onPress={() => null}
+                text="Sign Up"
                 // style={styles.button}
                 isLoading={isloading}
                 disabled={!isValid || !dirty || isSubmitting}
@@ -107,10 +138,10 @@ const login = () => {
                   flexDirection: "row",
                   alignItems: "flex-start",
                 }}
-                onPress={() => router.navigate("/(auth)/SignUp")}
+                onPress={() => router.navigate("/(auth)/login")}
               >
-                <Text style={styles.signUp}>Don't have an account?</Text>
-                <Text style={styles.signUpLink}>Sign Up</Text>
+                <Text style={styles.signUp}>Already have account?</Text>
+                <Text style={styles.signUpLink}>Login</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -120,7 +151,7 @@ const login = () => {
   );
 };
 
-export default login;
+export default SignUp;
 
 const styles = StyleSheet.create({
   container: {
@@ -137,6 +168,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "flex-start",
+    marginBottom: 20,
   },
   formContainer: {
     width: "100%",

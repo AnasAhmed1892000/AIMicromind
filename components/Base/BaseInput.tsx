@@ -4,8 +4,9 @@ import { View, TextInput, StyleSheet, TextInputProps } from "react-native";
 interface CustomInputProps extends TextInputProps {
   value: string;
   onChangeText: (text: string) => void;
-  icon?: React.ReactNode; // Optional prop for adding an icon
-  borderColor?: string; // Optional border color
+  icon?: React.ReactNode;
+  borderColor?: string;
+  isPassword?: boolean;
 }
 
 const BaseInput: React.FC<CustomInputProps> = ({
@@ -15,6 +16,7 @@ const BaseInput: React.FC<CustomInputProps> = ({
   secureTextEntry = false,
   keyboardType = "default",
   icon,
+  isPassword = false,
   borderColor = "#ccc",
   ...props
 }) => {
@@ -31,6 +33,7 @@ const BaseInput: React.FC<CustomInputProps> = ({
         placeholderTextColor="#aaa"
         {...props}
       />
+      {isPassword && <View style={styles.iconContainer}>{icon}</View>}
     </View>
   );
 };

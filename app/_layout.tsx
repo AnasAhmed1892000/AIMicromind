@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
-
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
@@ -31,8 +31,6 @@ export default function RootLayout() {
   };
   useEffect(() => {
     const prepareApp = async () => {
-      // Simulate loading or delay for 4 seconds
-      // await new Promise((resolve) => setTimeout(resolve, 4000));
       await SplashScreen.hideAsync(); // Hide the splash screen
       router.replace("/login"); // Navigate to the login screen
     };
@@ -46,7 +44,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Slot />
+      <GestureHandlerRootView>
+        <Slot />
+      </GestureHandlerRootView>
     </ThemeProvider>
   );
 }

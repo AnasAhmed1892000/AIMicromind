@@ -9,10 +9,10 @@ const Splash = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const startApp = () => {
-    if (true) {
+    if (false) {
       router.replace("/(auth)/login");
     } else {
-      router.replace("/(tabs)/explore");
+      router.replace("/(tabs)/home");
     }
   };
   const timer = setTimeout(() => {
