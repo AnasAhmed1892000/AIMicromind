@@ -7,12 +7,14 @@ import {
   TextInput,
   Image,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { MaterialIcons } from "@expo/vector-icons";
 import ChatItem from "@/components/ChatItem";
 import Logo from "@/assets/svgs/Chats-logo.svg";
 import BaseSearchBar from "@/components/Base/BaseSearchBar";
+import { router } from "expo-router";
 
 const HomeScreen = () => {
   const chats = [
@@ -57,7 +59,11 @@ const HomeScreen = () => {
           <TouchableOpacity style={styles.newChatButton}>
             <Text style={styles.newChatText}>+ New Chat</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              router.navigate("/profile");
+            }}
+          >
             <MaterialIcons name="person" size={28} color="#000" />
           </TouchableOpacity>
         </View>

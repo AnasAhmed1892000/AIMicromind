@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 const ChatItem = ({ item, onDelete }: { item: any; onDelete: () => void }) => {
   const renderRightActions = () => (
@@ -20,13 +21,20 @@ const ChatItem = ({ item, onDelete }: { item: any; onDelete: () => void }) => {
 
   return (
     <Swipeable renderRightActions={renderRightActions}>
-      <View style={styles.chatItem}>
-        <Image source={{ uri: item.image }} style={styles.chatImage} />
-        <View style={styles.chatDetails}>
-          <Text style={styles.chatTitle}>{item.title}</Text>
-          <Text style={styles.chatSubtitle}>{item.subtitle}</Text>
+      <TouchableOpacity
+        onPress={(event) => {
+          event.stopPropagation();
+          router.push("/chat");
+        }}
+      >
+        <View style={styles.chatItem}>
+          <Image source={{ uri: item.image }} style={styles.chatImage} />
+          <View style={styles.chatDetails}>
+            <Text style={styles.chatTitle}>{item.title}</Text>
+            <Text style={styles.chatSubtitle}>{item.subtitle}</Text>
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </Swipeable>
   );
 };
