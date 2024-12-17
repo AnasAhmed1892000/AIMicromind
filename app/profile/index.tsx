@@ -8,7 +8,7 @@ import HomeLogo from "@/assets/svgs/home-logo.svg";
 import BaseButton from "@/components/Base/BaseButton";
 import { router } from "expo-router";
 export default function ProfileScreen() {
-  const [isloading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const validationSchema = Yup.object({
     email: Yup.string()
       .email("Invalid email address")
@@ -84,7 +84,7 @@ export default function ProfileScreen() {
               <BaseButton
                 onPress={() => null}
                 text="Edit Info"
-                isLoading={isloading}
+                isLoading={isLoading}
                 disabled={false}
               />
             </View>

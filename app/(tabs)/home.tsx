@@ -48,11 +48,11 @@ const HomeScreen = () => {
   return (
     <View style={styles.container}>
       {/* Top Navigation */}
-      <View style={styles.topNav}>
-        <Logo width={50} height={50} />
-      </View>
 
       <View style={styles.navBar}>
+        <View style={styles.topNav}>
+          <Logo width={50} height={50} />
+        </View>
         <View style={styles.bottomNav}>
           <TouchableOpacity>
             <MaterialIcons name="home" size={28} color="#000" />
@@ -92,11 +92,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: Platform.OS === "ios" ? 50 : 25,
+    paddingTop: Platform.OS === "ios" ? 50 : 0,
     // paddingBottom: Platform.OS === "ios" ? 0 : 50,
   },
   navBar: {
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 10,
@@ -107,7 +107,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3, // Shadow radius for iOS
     elevation: 4, // Keeps shadow focused on the bottom
     borderTopWidth: 0,
-    borderTopColor: "white", // Top border color
+    borderTopColor: "white",
+    gap: 15,
   },
   topNav: {
     width: "100%",
