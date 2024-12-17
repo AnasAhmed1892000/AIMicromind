@@ -8,6 +8,7 @@ import {
   Image,
   TouchableOpacity,
   Pressable,
+  Platform,
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -91,7 +92,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 50,
+    paddingTop: Platform.OS === "ios" ? 50 : 25,
+    // paddingBottom: Platform.OS === "ios" ? 0 : 50,
   },
   navBar: {
     flexDirection: "row",
@@ -103,7 +105,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 }, // Shadow offset for iOS
     shadowOpacity: 0.1, // Shadow opacity for iOS
     shadowRadius: 3, // Shadow radius for iOS
-    elevation: 4, // Shadow elevation for Android
+    elevation: 4, // Keeps shadow focused on the bottom
+    borderTopWidth: 0,
+    borderTopColor: "white", // Top border color
   },
   topNav: {
     width: "100%",

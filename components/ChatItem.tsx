@@ -14,7 +14,14 @@ import { router } from "expo-router";
 
 const ChatItem = ({ item, onDelete }: { item: any; onDelete: () => void }) => {
   const renderRightActions = () => (
-    <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
+    <TouchableOpacity
+      style={styles.deleteButton}
+      onPress={(event) => {
+        event.preventDefault();
+        // event.stopPropagation();
+        onDelete();
+      }}
+    >
       <MaterialIcons name="delete" size={24} color="#fff" />
     </TouchableOpacity>
   );

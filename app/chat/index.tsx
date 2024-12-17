@@ -4,7 +4,6 @@ import {
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import * as Permissions from "expo-permissions";
 import { useState, useEffect } from "react";
 import {
   View,
@@ -52,6 +51,66 @@ const chatMessages = [
     time: "2:12 PM",
   },
 ];
+
+const RecordingSection = () => {
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordLength, setRecordLength] = useState(50); // Record duration in seconds
+
+  // Timer effect
+  useEffect(() => {
+    let timer;
+    if (isRecording && recordLength > 0) {
+      timer = setInterval(() => {
+        setRecordLength((prev) => prev - 1);
+      }, 1000);
+    } else if (recordLength === 0) {
+      setIsRecording(false); // Stop recording automatically when the countdown ends
+    }
+
+    return () => clearInterval(timer); // Cleanup on unmount
+  }, [isRecording, recordLength]);
+
+  const handleStartPauseRecording = () => {
+    if (isRecording) {
+      setIsRecording(false); // Pause recording
+    } else {
+      setIsRecording(true); // Start recording
+      if (recordLength === 0) setRecordLength(50); // Reset timer if it ended
+    }
+  };
+
+  return (
+    <View style={styles.recordingContainer}>
+      <TouchableOpacity
+        onPress={handleStartPauseRecording}
+        style={styles.recordButton}
+      >
+        {isRecording ? (
+          <MaterialCommunityIcons
+            name="pause-circle-outline"
+            size={36}
+            color="#F5EB10"
+          />
+        ) : (
+          <MaterialCommunityIcons
+            name="record-circle-outline"
+            size={36}
+            color="#F5EB10"
+          />
+        )}
+      </TouchableOpacity>
+      <Text style={styles.timer}>
+        {Math.floor(recordLength / 60)
+          .toString()
+          .padStart(2, "0")}{" "}
+        :{" "}
+        {Math.floor(recordLength % 60)
+          .toString()
+          .padStart(2, "0")}
+      </Text>
+    </View>
+  );
+};
 
 export default function ChatScreen() {
   const [messages, setMessages] = useState(chatMessages);
@@ -209,7 +268,7 @@ export default function ChatScreen() {
               placeholderTextColor="#aaa"
             />
           )}
-
+          {audioUri ? <RecordingSection /> : null}
           {message.trim() ? (
             <TouchableOpacity
               onPress={handleSendMessage}
@@ -254,7 +313,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
-    paddingTop: 50,
+    paddingTop: Platform.OS === "ios" ? 50 : 20,
     padding: 15,
   },
   headerTitle: {
@@ -331,6 +390,26 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     // padding: 8,
+  },
+  recordingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 10,
+    backgroundColor: "#f5f5f5",
+    padding: 10,
+    borderRadius: 8,
+  },
+  recordButton: {
+    marginRight: 10,
+    backgroundColor: "#fce303",
+    padding: 10,
+    borderRadius: 50,
+  },
+  timer: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
   },
 });
 // export default ChatScreen;

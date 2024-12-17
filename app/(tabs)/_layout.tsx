@@ -42,6 +42,8 @@ export default function TabLayout() {
             shadowRadius: 3, // Shadow radius for iOS
             elevation: 4,
             borderTopWidth: 0,
+            // paddingBottom: 50,
+            height: 65,
           },
         }),
       }}
