@@ -7,41 +7,26 @@ import { MaterialIcons } from "@expo/vector-icons";
 import HomeLogo from "@/assets/svgs/home-logo.svg";
 import BaseButton from "@/components/Base/BaseButton";
 import { router } from "expo-router";
-import { API_Login } from "@/network/auth/index";
-const login = () => {
+
+const resetPassword = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const validationSchema = Yup.object({
-    email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required"),
     password: Yup.string()
-      .min(8, "Password must be at least 8 characters")
+      .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password")], "Passwords must match")
+      .required("Confirm password is required"),
   });
 
-  const handleLogin = async (values: { email: string; password: string }) => {
-    setIsLoading(true);
-    let data = {
-      email: values.email,
-      password: values.password,
-    };
-    try {
-      const response = await API_Login(data);
-      console.log(response);
-      if (response.status === 200) {
-        router.replace("/(tabs)/home");
-        setIsLoading(false);
-        console.log(response.data);
-      }
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
-    }
-  };
+  const handleLogin = (values: {
+    password: string;
+    confirmPassword: string;
+  }) => {};
   return (
     <View style={styles.container}>
       <Formik
-        initialValues={{ email: "", password: "" }}
+        initialValues={{ password: "", confirmPassword: "" }}
         validationSchema={validationSchema}
         onSubmit={handleLogin}
       >
@@ -62,23 +47,6 @@ const login = () => {
             </View>
             <View>
               <View style={styles.form}>
-                {/* Email Input */}
-                <BaseInput
-                  value={values.email}
-                  onChangeText={handleChange("email")}
-                  onBlur={handleBlur("email")}
-                  placeholder="Enter your email"
-                  keyboardType="email-address"
-                  icon={<MaterialIcons name="email" size={24} color="#000" />}
-                  borderColor={
-                    touched.email && errors.email ? "#FF0000" : "#F5EB10"
-                  }
-                />
-                {touched.email && errors.email && (
-                  <Text style={styles.errorText}>{errors.email}</Text>
-                )}
-
-                {/* Password Input */}
                 <BaseInput
                   value={values.password}
                   onChangeText={handleChange("password")}
@@ -93,33 +61,30 @@ const login = () => {
                 {touched.password && errors.password && (
                   <Text style={styles.errorText}>{errors.password}</Text>
                 )}
-
-                {/* Forgot Password */}
-
+                <BaseInput
+                  value={values.confirmPassword}
+                  onChangeText={handleChange("confirmPassword")}
+                  onBlur={handleBlur("confirmPassword")}
+                  placeholder="Confirm your password"
+                  secureTextEntry
+                  icon={<MaterialIcons name="lock" size={24} color="#000" />}
+                  borderColor={
+                    touched.password && errors.password ? "#FF0000" : "#F5EB10"
+                  }
+                />
+                {touched.password && errors.password && (
+                  <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                )}
                 {/* Submit Button */}
-              </View>
-              <View
-                style={{
-                  width: "100%",
-                  alignSelf: "flex-end",
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => {
-                    router.navigate("/forgotPassword");
-                  }}
-                >
-                  <Text style={styles.forgotPassword}>Forgot Password?</Text>
-                </TouchableOpacity>
               </View>
             </View>
             <View style={styles.submit}>
               <BaseButton
-                onPress={() => handleLogin(values)}
-                text="Login"
+                onPress={() => router.navigate("/(tabs)/home")}
+                text="Reset Password"
                 // style={styles.button}
                 isLoading={isLoading}
-                disabled={!isValid || !dirty || isSubmitting}
+                disabled={!isValid || !dirty}
               />
               <TouchableOpacity
                 style={{
@@ -127,10 +92,9 @@ const login = () => {
                   flexDirection: "row",
                   alignItems: "flex-start",
                 }}
-                onPress={() => router.navigate("/(auth)/SignUp")}
+                onPress={() => router.navigate("/(auth)/login")}
               >
-                <Text style={styles.signUp}>Don't have an account?</Text>
-                <Text style={styles.signUpLink}>Sign Up</Text>
+                <Text style={styles.signUpLink}>Back to Login</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -140,7 +104,7 @@ const login = () => {
   );
 };
 
-export default login;
+export default resetPassword;
 
 const styles = StyleSheet.create({
   container: {
@@ -149,8 +113,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
 
-    padding: 20,
-    paddingTop: 50,
+    // padding: 20,
+    // paddingTop: 50,
   },
   logo: {
     width: "100%",
@@ -175,7 +139,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-start",
     borderRadius: 20,
-    marginTop: 20,
   },
   errorText: {
     color: "#FF0000",

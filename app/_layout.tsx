@@ -7,11 +7,12 @@ import { useFonts } from "expo-font";
 import { Redirect, Slot, Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { getToken } from "@/utils/helpers";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
@@ -25,22 +26,31 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  useEffect(() => {
+    async function checkAuth() {
+      const token = await getToken("token");
+      if (token) {
+        router.replace("/(tabs)/home");
+        setIsAuthenticated(true);
+      } else {
+        router.replace("/login");
+      }
+    }
+    checkAuth();
+  }, []);
   const prepare = async () => {
     SplashScreen.hide();
   };
   useEffect(() => {
     const prepareApp = async () => {
       await SplashScreen.hideAsync(); // Hide the splash screen
-      router.replace("/login"); // Navigate to the login screen
+      router.replace("/SignUp"); // Navigate to the login screen
     };
 
     prepareApp();
   }, []);
-
-  if (!loaded) {
-    return null;
-  }
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>

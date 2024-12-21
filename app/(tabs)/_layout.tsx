@@ -14,9 +14,7 @@ import DarkChatIcon from "@/assets/svgs/chat-icon-balck.svg";
 import DarkMarketplaceIcon from "@/assets/svgs/marketplace-icon-black.svg";
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  // if (true) {
-  //   return <Redirect href="/(auth)/login" />;
-  // }
+
   return (
     <Tabs
       screenOptions={{

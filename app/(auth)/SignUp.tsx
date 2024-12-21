@@ -7,30 +7,53 @@ import { MaterialIcons } from "@expo/vector-icons";
 import HomeLogo from "@/assets/svgs/home-logo.svg";
 import BaseButton from "@/components/Base/BaseButton";
 import { router } from "expo-router";
-
+import { API_Register } from "@/network/auth";
+import * as SecureStore from "expo-secure-store";
+import { saveToken } from "@/utils/helpers";
+const validationSchema = Yup.object({
+  name: Yup.string()
+    .min(6, "Name must be at least 3 characters")
+    .required("Name is required"),
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
+  password: Yup.string()
+    .min(8, "Password must be at least 6 characters")
+    .required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords must match")
+    .required("Confirm password is required"),
+});
 const SignUp = () => {
-  const [isloading, setIsLoading] = useState<boolean>(false);
-  const validationSchema = Yup.object({
-    name: Yup.string()
-      .min(3, "Name must be at least 3 characters")
-      .required("Name is required"),
-    email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required"),
-    password: Yup.string()
-      .min(6, "Password must be at least 6 characters")
-      .required("Password is required"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password")], "Passwords must match")
-      .required("Confirm password is required"),
-  });
-  const handleLogin = (values: {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleRegister = async (values: {
     name: string;
     email: string;
     password: string;
     confirmPassword: string;
   }) => {
-    console.log("Login values:", values);
+    setIsLoading(true);
+    let data = {
+      fullName: values.name,
+      email: values.email,
+      password: values.password,
+      confirmPassword: values.confirmPassword,
+    };
+    try {
+      const response = await API_Register(data);
+      console.log(response.data);
+      if (response.status === 200 || response.status === 201) {
+        await saveToken("token", response.data.token);
+        router.replace("/(tabs)/home");
+        setIsLoading(false);
+        console.log(response.data);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.log("error: ", error);
+      setIsLoading(false);
+    }
   };
   return (
     <View style={styles.container}>
@@ -42,7 +65,7 @@ const SignUp = () => {
           confirmPassword: "",
         }}
         validationSchema={validationSchema}
-        onSubmit={handleLogin}
+        onSubmit={handleRegister}
       >
         {({
           handleChange,
@@ -74,7 +97,7 @@ const SignUp = () => {
                     />
                   }
                   borderColor={
-                    touched.email && errors.email ? "#FF0000" : "#FFD700"
+                    touched.email && errors.email ? "#FF0000" : "#F5EB10"
                   }
                 />
                 {touched.email && errors.email && (
@@ -88,7 +111,7 @@ const SignUp = () => {
                   keyboardType="email-address"
                   icon={<MaterialIcons name="email" size={24} color="#000" />}
                   borderColor={
-                    touched.email && errors.email ? "#FF0000" : "#FFD700"
+                    touched.email && errors.email ? "#FF0000" : "#F5EB10"
                   }
                 />
                 {touched.email && errors.email && (
@@ -102,7 +125,7 @@ const SignUp = () => {
                   secureTextEntry
                   icon={<MaterialIcons name="lock" size={24} color="#000" />}
                   borderColor={
-                    touched.password && errors.password ? "#FF0000" : "#FFD700"
+                    touched.password && errors.password ? "#FF0000" : "#F5EB10"
                   }
                 />
                 {touched.password && errors.password && (
@@ -116,7 +139,7 @@ const SignUp = () => {
                   secureTextEntry
                   icon={<MaterialIcons name="lock" size={24} color="#000" />}
                   borderColor={
-                    touched.password && errors.password ? "#FF0000" : "#FFD700"
+                    touched.password && errors.password ? "#FF0000" : "#F5EB10"
                   }
                 />
                 {touched.password && errors.password && (
@@ -126,10 +149,10 @@ const SignUp = () => {
             </View>
             <View style={styles.submit}>
               <BaseButton
-                onPress={() => null}
+                onPress={handleSubmit}
                 text="Sign Up"
                 // style={styles.button}
-                isLoading={isloading}
+                isLoading={isLoading}
                 disabled={!isValid || !dirty || isSubmitting}
               />
               <TouchableOpacity
@@ -213,12 +236,12 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     marginTop: 10,
     fontSize: 14,
-    color: "#FFD700",
+    color: "#F5EB10",
     textDecorationLine: "underline",
     paddingRight: 3,
   },
   button: {
-    backgroundColor: "#FFD700",
+    backgroundColor: "#F5EB10",
     borderRadius: 25,
     paddingVertical: 15,
     justifyContent: "center",

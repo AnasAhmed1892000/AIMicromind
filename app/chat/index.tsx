@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === "android" ? 0 : 5,
   },
   sendButton: {
-    backgroundColor: "#FFD700",
+    backgroundColor: "#F5EB10",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,

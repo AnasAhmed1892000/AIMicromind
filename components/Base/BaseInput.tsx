@@ -7,6 +7,7 @@ interface CustomInputProps extends TextInputProps {
   icon?: React.ReactNode;
   borderColor?: string;
   isPassword?: boolean;
+  disabled?: boolean;
 }
 
 const BaseInput: React.FC<CustomInputProps> = ({
@@ -18,6 +19,7 @@ const BaseInput: React.FC<CustomInputProps> = ({
   icon,
   isPassword = false,
   borderColor = "#ccc",
+  disabled = false,
   ...props
 }) => {
   return (
@@ -30,6 +32,7 @@ const BaseInput: React.FC<CustomInputProps> = ({
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         style={styles.input}
+        editable={!disabled}
         placeholderTextColor="#aaa"
         {...props}
       />

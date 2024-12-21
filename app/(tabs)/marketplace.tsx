@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   activeNavText: {
-    color: "#FFD700",
+    color: "#F5EB10",
   },
   searchBar: {
     height: 50,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   newChatButton: {
-    backgroundColor: "#FFD700",
+    backgroundColor: "#F5EB10",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 25,

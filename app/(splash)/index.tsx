@@ -8,22 +8,6 @@ const Splash = () => {
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const startApp = () => {
-    if (false) {
-      router.replace("/(auth)/login");
-    } else {
-      router.replace("/(tabs)/home");
-    }
-  };
-  const timer = setTimeout(() => {
-    setIsFinished(true);
-  }, 4000);
-  useEffect(() => {
-    if (isFinished) {
-      startApp();
-    }
-  }, [isFinished]);
-
   return (
     <SafeAreaView style={styles.screen}>
       <Logo />

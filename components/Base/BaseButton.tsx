@@ -23,7 +23,7 @@ const BaseButton: React.FC<ButtonProps> = ({
   text,
   onPress,
   isLoading = false,
-  backgroundColor = "#FFD700", // Default yellow
+  backgroundColor = "#F5EB10", // Default yellow
   textColor = "#000", // Default black
   disabled = false,
   style,
@@ -53,7 +53,7 @@ const BaseButton: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "#FFD700",
+    backgroundColor: "#F5EB10",
     borderRadius: 25,
     paddingVertical: 15,
     justifyContent: "center",
