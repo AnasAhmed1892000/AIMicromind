@@ -6,5 +6,11 @@ export const endPoints = {
     // forget_password: "/accounts/forgot-password",
     logout: "/api/v1/users/logout",
   },
-  content: {},
+  content: {
+    createChat: "/api/v1/chats",
+    getChats: "/api/v1/chats/my-chats/",
+    deleteChat: "/api/v1/chats/",
+    getChatMessages:
+      "/api/v1/chats/676877403aae60efe4f85d05/messages/?limit=10&page=1",
+  },
 };

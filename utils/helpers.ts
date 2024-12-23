@@ -1,4 +1,7 @@
+import { axios, AxiosError } from "axios";
+import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { Alert } from "react-native";
 
 export async function saveToken(key: string, value: string) {
   try {
@@ -29,3 +32,37 @@ export async function deleteToken(key: string) {
     console.error("Error deleting token:", error);
   }
 }
+export function formatTimeTo12Hour(isoString: string): string {
+  const date = new Date(isoString); // Convert the ISO string to a Date object
+  let hours = date.getHours(); // Get the hours in 24-hour format
+  const minutes = String(date.getMinutes()).padStart(2, "0"); // Get minutes and pad to 2 digits
+  const amPm = hours >= 12 ? "PM" : "AM"; // Determine AM or PM
+
+  hours = hours % 12 || 12; // Convert 24-hour time to 12-hour format, treating 0 as 12
+
+  return `${hours}:${minutes} ${amPm}`; // Return the formatted time
+}
+export async function handleTokenExpires(error: AxiosError) {
+  if (error?.status === 500 && error.response.data.message === "jwt expired") {
+    try {
+      await deleteToken("token");
+      Alert.alert(
+        "Session Expired",
+        "Your session has expired. Please log in again."
+      );
+      router.replace("/(auth)/login");
+    } catch (error) {
+      console.error("Error handling expired token:", error);
+    }
+  }
+}
+export const truncateText = (text: string) => {
+  if (!text) return "";
+  const words = text.split(" ");
+
+  if (words.length > 4) {
+    return words.slice(0, 4).join(" ") + "...";
+  }
+
+  return text;
+};

@@ -1,5 +1,4 @@
 import colors from "@/assets/colors";
-import CloseIcon from "@/assets/icons/CloseIcon";
 import { FC } from "react";
 import {
   Modal,
@@ -41,18 +40,7 @@ const BaseModal: FC<TModalProps> = ({
           onRequestClose={onDismiss}
         >
           <View style={[styles.centeredView, styles[mode]]}>
-            <View style={[styles.popup, styles[mode], style]}>
-              {hasClose && (
-                <TouchableOpacity
-                  style={styles.buttonClose}
-                  onPress={onDismiss}
-                  hitSlop={20}
-                >
-                  <CloseIcon />
-                </TouchableOpacity>
-              )}
-              {children}
-            </View>
+            <View style={[styles.popup, styles[mode], style]}>{children}</View>
           </View>
         </Modal>
       </SafeAreaView>
@@ -85,8 +73,8 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     backgroundColor: colors.white_0,
     borderRadius: 20,
-    maxHeight: 300,
-    overflow: "hidden",
+    maxHeight: 750,
+    overflow: "visible",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

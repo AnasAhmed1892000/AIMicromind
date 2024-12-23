@@ -11,15 +11,24 @@ import {
 import { Swipeable } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { chat } from "@/app/(tabs)/home";
+import { baseUrls } from "@/network";
+import { formatTimeTo12Hour, truncateText } from "@/utils/helpers";
 
-const ChatItem = ({ item, onDelete }: { item: any; onDelete: () => void }) => {
+const ChatItem = ({
+  item,
+  onDelete,
+}: {
+  item: chat;
+  onDelete: (id: string) => void;
+}) => {
   const renderRightActions = () => (
     <TouchableOpacity
       style={styles.deleteButton}
       onPress={(event) => {
-        event.preventDefault();
-        // event.stopPropagation();
-        onDelete();
+        // event.preventDefault();
+        event.stopPropagation();
+        onDelete(item._id);
       }}
     >
       <MaterialIcons name="delete" size={24} color="#fff" />
@@ -31,14 +40,41 @@ const ChatItem = ({ item, onDelete }: { item: any; onDelete: () => void }) => {
       <TouchableOpacity
         onPress={(event) => {
           event.stopPropagation();
-          router.push("/chat");
+          router.push({
+            pathname: "/chat",
+            params: {
+              chatId: item._id,
+              imgUrl: item.chatPhoto,
+              chatName: item.chatName,
+            },
+          });
         }}
       >
         <View style={styles.chatItem}>
-          <Image source={{ uri: item.image }} style={styles.chatImage} />
+          <Image
+            source={{ uri: `${baseUrls.stage}/img/chats/${item.chatPhoto}` }}
+            style={styles.chatImage}
+          />
           <View style={styles.chatDetails}>
-            <Text style={styles.chatTitle}>{item.title}</Text>
-            <Text style={styles.chatSubtitle}>{item.subtitle}</Text>
+            <Text style={styles.chatTitle}>{item.chatName}</Text>
+            {item.latestMessage && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  paddingInlineEnd: 10,
+                }}
+              >
+                <Text style={styles.chatSubtitle}>
+                  {item.latestMessage?.text
+                    ? truncateText(item.latestMessage?.text)
+                    : "Hey there!"}
+                </Text>
+                <Text style={styles.chatTime}>
+                  {formatTimeTo12Hour(item.latestMessage.createdAt)}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </TouchableOpacity>
@@ -139,5 +175,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#000",
+  },
+  chatTime: {
+    fontSize: 12,
+    color: "#777",
+    marginTop: 5,
   },
 });

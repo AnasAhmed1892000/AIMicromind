@@ -4,7 +4,7 @@ import {
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -17,175 +17,63 @@ import {
   Platform,
   Alert,
   Button,
+  ActivityIndicator,
 } from "react-native";
 import images from "../../assets/images/images";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import Send from "@/assets/svgs/send-icon.svg";
 import Record from "@/assets/svgs/record-icon.svg";
 import Attach from "@/assets/svgs/attach-icon.svg";
 import { Audio } from "expo-av";
-
-// import {
-//   useAudioRecorder,
-//   RecordingOptions,
-//   AudioModule,
-//   RecordingPresets,
-// } from "expo-audio";
-const chatMessages = [
-  {
-    id: "1",
-    sender: "user",
-    text: "Hi, I'm experiencing an issue with our Oracle database. It seems to hang when running large queries. Can you help?",
-    time: "2:10 PM",
-  },
-  {
-    id: "2",
-    sender: "support",
-    text: "Hello! I'd be happy to assist. Could you provide more details? For example, which version of Oracle Database are you using and any error messages you’ve encountered?",
-    time: "2:00 PM",
-  },
-  {
-    id: "3",
-    sender: "user",
-    text: "Not yet. I'm not very familiar with SQL Tuning Advisor. Could you guide me?",
-    time: "2:12 PM",
-  },
-];
-
-const RecordingSection = () => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordLength, setRecordLength] = useState(50); // Record duration in seconds
-
-  // Timer effect
-  useEffect(() => {
-    let timer;
-    if (isRecording && recordLength > 0) {
-      timer = setInterval(() => {
-        setRecordLength((prev) => prev - 1);
-      }, 1000);
-    } else if (recordLength === 0) {
-      setIsRecording(false); // Stop recording automatically when the countdown ends
-    }
-
-    return () => clearInterval(timer); // Cleanup on unmount
-  }, [isRecording, recordLength]);
-
-  const handleStartPauseRecording = () => {
-    if (isRecording) {
-      setIsRecording(false); // Pause recording
-    } else {
-      setIsRecording(true); // Start recording
-      if (recordLength === 0) setRecordLength(50); // Reset timer if it ended
-    }
-  };
-
-  return (
-    <View style={styles.recordingContainer}>
-      <TouchableOpacity
-        onPress={handleStartPauseRecording}
-        style={styles.recordButton}
-      >
-        {isRecording ? (
-          <MaterialCommunityIcons
-            name="pause-circle-outline"
-            size={36}
-            color="#F5EB10"
-          />
-        ) : (
-          <MaterialCommunityIcons
-            name="record-circle-outline"
-            size={36}
-            color="#F5EB10"
-          />
-        )}
-      </TouchableOpacity>
-      <Text style={styles.timer}>
-        {Math.floor(recordLength / 60)
-          .toString()
-          .padStart(2, "0")}{" "}
-        :{" "}
-        {Math.floor(recordLength % 60)
-          .toString()
-          .padStart(2, "0")}
-      </Text>
-    </View>
-  );
-};
+import VoiceRecorder from "@/components/VoiceRecorder";
+import MessageWithAudio from "@/components/MessageWithAudio";
+import { deleteToken, formatTimeTo12Hour } from "@/utils/helpers";
+import { API_GetChatMessages } from "@/network/content";
+import { baseUrls } from "@/network";
+// enum MessageType {
+//   TEXT = "text",
+//   VOICE = "voice",
+//   IMAGE = "image",
+//   FILE = "file",
+// }
+export interface TMessage {
+  type: string;
+  _id: string;
+  chat: string;
+  sender: string;
+  text: string;
+  starred: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
 
 export default function ChatScreen() {
-  const [messages, setMessages] = useState(chatMessages);
+  const [messages, setMessages] = useState<TMessage[] | []>([]);
   const [input, setInput] = useState("");
   const [message, setMessage] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [recording, setRecording] = useState<Audio.Recording | null>();
-  const [recordings, setRecordings] = useState([]);
-  const [sound, setSound] = useState<Audio.Sound | null>();
-  const [audioUri, setAudioUri] = useState<string | null | undefined>("");
-  const [permissionResponse, requestPermission] = Audio.usePermissions();
-  const handleAttachFile = () => {
-    console.log("Attach file clicked");
-  };
-  const handleStartRecording = async () => {
-    try {
-      setIsRecording(true);
-      const perm = await Audio.requestPermissionsAsync();
-      if (perm.status === "granted") {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: true,
-          playsInSilentModeIOS: true,
-        });
-        const { recording } = await Audio.Recording.createAsync(
-          Audio.RecordingOptionsPresets.HIGH_QUALITY
-        );
-        setRecording(recording);
-      }
-    } catch (err) {}
-  };
-  const stopRecording = async () => {
-    console.log("Stopping recording..");
-    setIsRecording(false);
-    setRecording(undefined);
-    await recording?.stopAndUnloadAsync();
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-    });
-    const uri = recording?.getURI();
-    setAudioUri(uri);
-    console.log("Recording stopped and stored at", uri);
-  };
-  async function playRecording() {
-    try {
-      console.log("Loading sound...");
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: audioUri ?? "" }, // Use the saved URI
-        { shouldPlay: true }
-      );
-      setSound(sound);
-      console.log("Playing sound...");
-      await sound.playAsync(); // Play the sound
-    } catch (error) {
-      console.error("Error playing sound:", error);
-    }
-  }
-  async function stopPlaying() {
-    if (sound) {
-      console.log("Stopping playback...");
-      await sound.stopAsync();
-
-      setSound(undefined);
-    }
-  }
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [recordDuration, setRecordDuration] = useState(0);
+  const [audioUri, setAudioUri] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { chatId, chatName, imgUrl } = useLocalSearchParams();
   const handleSendMessage = () => {
+    setMessage(""); // Clear the input after sending
+  };
+  const handleSendVoiceMessage = () => {
     setMessages([
       {
         id: Date.now().toString(),
         sender: "user",
-        text: message,
+        text: audioUri || "",
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
           hour12: true, // Set to true for 12-hour format
         }),
+        type: MessageType.VOICE,
+        duration: recordDuration,
       },
       ...messages,
     ]);
@@ -195,30 +83,67 @@ export default function ChatScreen() {
     item,
   }: {
     item: {
-      id: string;
+      type: string;
+      _id: string;
+      chat: string;
       sender: string;
       text: string;
-      time: string;
+      starred: boolean;
+      createdAt: string;
+      updatedAt: string;
+      __v: number;
     };
   }) => (
-    <View
-      style={[
-        styles.messageContainer,
-        item.sender === "user" ? styles.userMessage : styles.supportMessage,
-      ]}
-    >
-      <Text
-        style={
-          item.sender === "user"
-            ? styles.userMessageText
-            : styles.supportMessageText
-        }
+    <View>
+      <View
+        style={[
+          styles.messageContainer,
+          item.sender === "user" ? styles.userMessage : styles.supportMessage,
+        ]}
       >
-        {item.text}
-      </Text>
-      <Text style={styles.messageTime}>{item.time}</Text>
+        {item.type === "audio" && (
+          <MessageWithAudio
+            audioUri={item.text}
+            // duration={item 0}
+          />
+        )}
+        <Text
+          style={
+            item.sender === "user"
+              ? styles.userMessageText
+              : styles.supportMessageText
+          }
+        >
+          {item.text}
+        </Text>
+        <Text style={styles.messageTime}>
+          {formatTimeTo12Hour(item.createdAt)}
+        </Text>
+      </View>
+
+      {/* {item.type === "file" && (
+        <MaterialCommunityIcons name="file" size={24} color="#000" />
+      )} */}
     </View>
   );
+  const getChatMessages = async (chatId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await API_GetChatMessages(chatId);
+      if (response.status === 200) {
+        console.log(response.data.data.messages);
+        setMessages(response.data.data.messages);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.log("error inside chat :", error);
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    getChatMessages(chatId as string);
+    // deleteToken("token");
+  }, []);
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -230,35 +155,48 @@ export default function ChatScreen() {
           <TouchableOpacity onPress={() => router.navigate("/(tabs)/home")}>
             <Ionicons name="chevron-back" size={30} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Oracle Support</Text>
+          <Text style={styles.headerTitle}>{chatName}</Text>
           <Image
-            source={images.chat} // Replace with your logo path
+            source={{ uri: `${baseUrls.stage}/img/chats/${imgUrl}` }} // Replace with your logo path
             style={styles.headerIcon}
           />
         </View>
 
         {/* Chat List */}
-        <FlatList
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.chatList}
-          inverted
-        />
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: "center" }}>
+            <ActivityIndicator />
+          </View>
+        ) : (
+          <FlatList
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={styles.chatList}
+            inverted
+          />
+        )}
 
         {/* Input Field */}
         <View style={styles.inputContainer}>
-          <TouchableOpacity
-            onPress={handleAttachFile}
-            style={styles.iconButton}
-          >
-            <Attach size={24} />
-          </TouchableOpacity>
-          {audioUri ? (
-            <>
-              <Button title="Play " onPress={playRecording} />
-              {sound && <Button title="Stop " onPress={stopPlaying} />}
-            </>
+          <View style={styles.iconsContainer}>
+            <TouchableOpacity
+              // onPress={handleAttachFile}
+              disabled={audioUri || isRecording ? true : false}
+              style={styles.iconButton}
+            >
+              <Attach size={24} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              // onPress={handleAttachFile}
+              disabled={audioUri || isRecording ? true : false}
+              style={styles.iconButton}
+            >
+              <MaterialIcons name="add-a-photo" size={28} />
+            </TouchableOpacity>
+          </View>
+          {audioUri || isRecording ? (
+            <></>
           ) : (
             <TextInput
               style={styles.input}
@@ -268,7 +206,7 @@ export default function ChatScreen() {
               placeholderTextColor="#aaa"
             />
           )}
-          {audioUri ? <RecordingSection /> : null}
+          {/* {audioUri ? <RecordingSection /> : null} */}
           {message.trim() ? (
             <TouchableOpacity
               onPress={handleSendMessage}
@@ -277,20 +215,15 @@ export default function ChatScreen() {
               <Send size={20} />
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity
-              onPress={isRecording ? stopRecording : handleStartRecording}
-              style={styles.iconButton}
-            >
-              {isRecording ? (
-                <MaterialCommunityIcons
-                  name="record-circle-outline"
-                  size={24}
-                  color={"#F5EB10"}
-                />
-              ) : (
-                <Record size={24} />
-              )}
-            </TouchableOpacity>
+            <VoiceRecorder
+              audioUri={audioUri}
+              setAudioUri={setAudioUri}
+              setIsRecording={setIsRecording}
+              isRecording={isRecording}
+              recordDuration={recordDuration}
+              setRecordDuration={setRecordDuration}
+              handleSend={handleSendVoiceMessage}
+            />
           )}
         </View>
       </View>
@@ -305,6 +238,7 @@ const styles = StyleSheet.create({
     // padding: 10,
     //
   },
+
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -359,6 +293,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "#fff",
     borderRadius: 25,
     paddingVertical: 10,
@@ -388,8 +323,12 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
   },
+  iconsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   iconButton: {
-    // padding: 8,
+    marginHorizontal: 5,
   },
   recordingContainer: {
     flexDirection: "row",

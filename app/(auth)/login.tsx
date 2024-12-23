@@ -8,6 +8,7 @@ import HomeLogo from "@/assets/svgs/home-logo.svg";
 import BaseButton from "@/components/Base/BaseButton";
 import { router } from "expo-router";
 import { API_Login } from "@/network/auth/index";
+import { saveToken } from "@/utils/helpers";
 const login = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const validationSchema = Yup.object({
@@ -30,6 +31,7 @@ const login = () => {
       console.log(response);
       if (response.status === 200) {
         router.replace("/(tabs)/home");
+        await saveToken("token", response.data.token);
         setIsLoading(false);
         console.log(response.data);
       }

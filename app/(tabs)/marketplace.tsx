@@ -8,12 +8,15 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  Platform,
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { MaterialIcons } from "@expo/vector-icons";
 import ChatItem from "@/components/ChatItem";
 import Logo from "@/assets/svgs/Chats-logo.svg";
+import ProfileIcon from "@/assets/svgs/person-outline.svg";
 import BaseSearchBar from "@/components/Base/BaseSearchBar";
+import { router } from "expo-router";
 const { width } = Dimensions.get("window");
 const MarketplaceScreen = () => {
   // const cardData = [
@@ -59,20 +62,18 @@ const MarketplaceScreen = () => {
   return (
     <View style={styles.container}>
       {/* Top Navigation */}
-      <View style={styles.topNav}>
-        <Logo width={50} height={50} />
-      </View>
-
       <View style={styles.navBar}>
+        <View style={styles.topNav}>
+          <Logo width={50} height={50} />
+        </View>
         <View style={styles.bottomNav}>
-          <TouchableOpacity>
-            <MaterialIcons name="home" size={28} color="#000" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.newChatButton}>
-            <Text style={styles.newChatText}>+ New Chat</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <MaterialIcons name="person" size={28} color="#000" />
+          <Text style={styles.title}>Marketplace</Text>
+          <TouchableOpacity
+            onPress={() => {
+              router.navigate("/profile");
+            }}
+          >
+            <ProfileIcon />
           </TouchableOpacity>
         </View>
       </View>
@@ -108,25 +109,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 50,
+    paddingTop: Platform.OS === "ios" ? 50 : 0,
   },
   navBar: {
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    // paddingHorizontal: 20,
     paddingVertical: 10,
     backgroundColor: "#fff", // Navbar background color
     shadowColor: "#000", // Shadow color
     shadowOffset: { width: 0, height: 3 }, // Shadow offset for iOS
     shadowOpacity: 0.1, // Shadow opacity for iOS
     shadowRadius: 3, // Shadow radius for iOS
-    elevation: 4, // Shadow elevation for Android
+    elevation: 4, // Keeps shadow focused on the bottom
+    borderTopWidth: 0,
+    borderTopColor: "white",
+    gap: 15,
   },
   topNav: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
   },
+
   navButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -231,9 +236,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 5,
+    color: "#000",
+    marginRight: 20,
   },
   description: {
     fontSize: 14,

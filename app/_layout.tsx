@@ -28,25 +28,20 @@ export default function RootLayout() {
   });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // const prepare = async () => {
+  //   SplashScreen.hide();
+  // };
   useEffect(() => {
-    async function checkAuth() {
+    const prepareApp = async () => {
+      router.replace("/(splash)");
+      await SplashScreen.hideAsync();
       const token = await getToken("token");
       if (token) {
         router.replace("/(tabs)/home");
         setIsAuthenticated(true);
       } else {
-        router.replace("/login");
-      }
-    }
-    checkAuth();
-  }, []);
-  const prepare = async () => {
-    SplashScreen.hide();
-  };
-  useEffect(() => {
-    const prepareApp = async () => {
-      await SplashScreen.hideAsync(); // Hide the splash screen
-      router.replace("/SignUp"); // Navigate to the login screen
+        router.replace("/(auth)/login");
+      } // Navigate to the login screen
     };
 
     prepareApp();
