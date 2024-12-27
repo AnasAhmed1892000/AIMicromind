@@ -35,6 +35,15 @@ export const API_SendMessage = async (id: string, data: FormData) => {
   return await axiosInstance({
     url: `/api/v1/chats/${id}/messages/`,
     method: "POST",
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
     data,
+  });
+};
+export const API_GetChatDetails = async (id: string) => {
+  return await axiosInstance({
+    url: `/api/v1/chats/${id}`,
+    method: "GET",
   });
 };
