@@ -28,7 +28,13 @@ import Attach from "@/assets/svgs/attach-icon.svg";
 import { Audio } from "expo-av";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import MessageWithAudio from "@/components/MessageWithAudio";
-import { deleteToken, formatTimeTo12Hour } from "@/utils/helpers";
+import {
+  deleteToken,
+  formatTimeTo12Hour,
+  getFileType,
+  ReadAsAsync,
+  truncateText,
+} from "@/utils/helpers";
 import {
   API_GetChatDetails,
   API_GetChatMessages,
@@ -37,6 +43,8 @@ import {
 import { baseUrls } from "@/network";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
+import GenericFileViewer from "@/components/GenericFileViewer";
+
 export interface TMessage {
   type: string;
   _id: string;
@@ -44,9 +52,16 @@ export interface TMessage {
   sender: string;
   text: string;
   starred: boolean;
+  file: string;
   createdAt: string;
   updatedAt: string;
   __v: number;
+}
+export interface TFile {
+  mimeType: string;
+  name: string;
+  size: number;
+  uri: string;
 }
 
 export default function ChatScreen() {
@@ -62,8 +77,9 @@ export default function ChatScreen() {
   const { chatId, chatName, imgUrl } = useLocalSearchParams();
   const [chatURL, setChatURL] = useState<string>("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [selectedFile, setSelectedFile] = useState<TFile | null>(null);
   const [selectedFileURI, setSelectedFileURI] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const pickImage = async () => {
     // Request permission to access the media library
     const permissionResult =
@@ -95,10 +111,9 @@ export default function ChatScreen() {
         copyToCacheDirectory: true,
       });
 
-      if (result.type === "success") {
-        console.log("Selected file:", result);
-        setSelectedFile(result);
-        setSelectedFileURI(result.uri);
+      if (!result.canceled) {
+        setSelectedFile(result.assets[0]);
+        setSelectedFileURI(result.assets[0].uri);
       } else if (result.type === "cancel") {
         console.log("Cancelled", "File selection was cancelled.");
       }
@@ -107,17 +122,48 @@ export default function ChatScreen() {
       console.log("Error", "An error occurred while selecting the file.");
     }
   };
-  const formData = new FormData();
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (voiceUri?: string) => {
+    const formData = new FormData();
     formData.append("chatUrl", chatURL);
-    formData.append("text", message);
-
+    if (message) formData.append("text", message);
+    if (selectedImage) {
+      ReadAsAsync(selectedImage);
+      formData.append("file", {
+        uri: selectedImage,
+        name: "photo.jpg", // Ensure the file has a name
+        type: "image/jpeg", // Set MIME type
+      });
+    }
+    if (voiceUri) {
+      ReadAsAsync(voiceUri);
+      // console.log(audioUri);
+      // const fileUri = getAudioUri();
+      const filetype = voiceUri.split(".").pop();
+      const filename = voiceUri.split("/").pop();
+      console.log("audio details ", filetype, filename);
+      formData.append("file", {
+        uri: voiceUri,
+        type: `audio/${filetype}`,
+        name: filename,
+      });
+    }
+    if (selectedFile) {
+      formData.append("file", {
+        uri: selectedFileURI,
+        name: selectedFile.name,
+        type: selectedFile.mimeType,
+      });
+    }
     const res = await API_SendMessage(chatId as string, formData);
 
     if (res.status === 200) {
-      console.log("respond ti voice message :", res.data);
+      console.log("respond to voice message :", res.data);
       getChatMessages(chatId as string);
       setMessage("");
+      setSelectedFile(null);
+      setSelectedFileURI(null);
+      setSelectedImage(null);
+      setAudioUri(null);
     }
   };
   const getChatDetails = async () => {
@@ -139,6 +185,7 @@ export default function ChatScreen() {
       chat: string;
       sender: string;
       text: string;
+      file: string;
       starred: boolean;
       createdAt: string;
       updatedAt: string;
@@ -152,21 +199,38 @@ export default function ChatScreen() {
           item.sender === "user" ? styles.userMessage : styles.supportMessage,
         ]}
       >
+        {item.type === "file" && (
+          <GenericFileViewer
+            FileUri={item.file}
+            mimeType={getFileType(item.file)}
+            name={item.file.slice(0, 8) + "..."}
+
+            // style={{ width: 200, height: 200, borderRadius: 10 }}
+          />
+        )}
+        {item.type === "photo" && (
+          <Image
+            source={{ uri: `${baseUrls.stage}/chat-uploads/${item.file}` }}
+            style={{ width: 200, height: 200, borderRadius: 10 }}
+          />
+        )}
         {item.type === "audio" && (
           <MessageWithAudio
             audioUri={item.text}
             // duration={item 0}
           />
         )}
-        <Text
-          style={
-            item.sender === "user"
-              ? styles.userMessageText
-              : styles.supportMessageText
-          }
-        >
-          {item.text}
-        </Text>
+        {item.text !== "" && item.type !== "audio" && (
+          <Text
+            style={
+              item.sender === "user"
+                ? styles.userMessageText
+                : styles.supportMessageText
+            }
+          >
+            {item.text}
+          </Text>
+        )}
         <Text style={styles.messageTime}>
           {formatTimeTo12Hour(item.createdAt)}
         </Text>
@@ -177,7 +241,7 @@ export default function ChatScreen() {
       )} */}
     </View>
   );
-  const getChatMessages = async (chatId: string) => {
+  const getChatMessages = async (chatId: string, page = 1) => {
     setIsLoading(true);
     try {
       const response = await API_GetChatMessages(chatId);
@@ -191,7 +255,25 @@ export default function ChatScreen() {
       setIsLoading(false);
     }
   };
+  const LoadMoreMessages = async (chatId: string, page: number) => {
+    setIsLoadingMore(true);
+    try {
+      const response = await API_GetChatMessages(chatId, page);
+      if (response.status === 200) {
+        console.log(response.data.data.messages);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          ...response.data.data.messages,
+        ]);
+        setIsLoadingMore(false);
+      }
+    } catch (error) {
+      console.log("error inside chat :", error);
+      setIsLoadingMore(false);
+    }
+  };
   useEffect(() => {
+    console.log("chat id : ", chatId);
     getChatMessages(chatId as string);
     getChatDetails();
   }, []);
@@ -205,38 +287,12 @@ export default function ChatScreen() {
       console.log("File does not exist.");
     }
   };
-  // useEffect(() => {
-  //   if (audioUri) {
-  //     console.log(audioUri);
-  //     const fileUri = getAudioUri();
-  //     const filetype = audioUri.split(".").pop();
-  //     const filename = audioUri.split("/").pop();
+  useEffect(() => {
+    if (page > 1) {
+      LoadMoreMessages(chatId as string, page);
+    }
+  }, [page]);
 
-  //     formData.append("file", {
-  //       fileUri,
-  //       type: `audio/${filetype}`,
-  //       name: filename,
-  //     } as unknown as Blob);
-  //   }
-  // }, [audioUri]);
-  useEffect(() => {
-    if (selectedImage) {
-      formData.append("photo", {
-        uri: selectedImage,
-        name: "photo.jpg", // Ensure the file has a name
-        type: "image/jpeg", // Set MIME type
-      });
-    }
-  }, [selectedImage]);
-  useEffect(() => {
-    if (selectedFile) {
-      formData.append("file", {
-        uri: selectedFileURI,
-        name: selectedFile.name,
-        type: selectedFile.mimeType,
-      });
-    }
-  }, [selectedFileURI, selectedFile]);
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -266,7 +322,7 @@ export default function ChatScreen() {
             renderItem={renderMessage}
             keyExtractor={(item) => item._id}
             contentContainerStyle={styles.chatList}
-            onScrollEndDrag={() => null}
+            onScrollEndDrag={() => setPage((prev) => prev + 1)}
             inverted
           />
         )}
@@ -288,6 +344,14 @@ export default function ChatScreen() {
             >
               <MaterialIcons name="add-a-photo" size={28} />
             </TouchableOpacity>
+            {(selectedFileURI || selectedImage) && (
+              <Ionicons
+                name="cloud-done"
+                size={24}
+                color="black"
+                style={{ marginInline: 10 }}
+              />
+            )}
           </View>
           {audioUri || isRecording ? (
             <></>
@@ -303,16 +367,16 @@ export default function ChatScreen() {
           {/* {audioUri ? <RecordingSection /> : null} */}
           {message.trim() ? (
             <TouchableOpacity
-              onPress={handleSendMessage}
+              onPress={() => handleSendMessage()}
               style={styles.iconButton}
             >
               <Send size={20} />
             </TouchableOpacity>
           ) : (
             <>
-              {selectedImage || selectedFileURI !== null ? (
+              {selectedFileURI || selectedImage ? (
                 <TouchableOpacity
-                  onPress={handleSendMessage}
+                  onPress={() => handleSendMessage()}
                   style={styles.iconButton}
                 >
                   <Send size={20} />
@@ -325,7 +389,7 @@ export default function ChatScreen() {
                   isRecording={isRecording}
                   recordDuration={recordDuration}
                   setRecordDuration={setRecordDuration}
-                  handleSend={handleSendMessage}
+                  handleSendMessage={handleSendMessage}
                 />
               )}
             </>
@@ -406,7 +470,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
     marginHorizontal: 10,
-    marginBottom: 20,
+    marginBottom: 30,
   },
   input: {
     flex: 1,

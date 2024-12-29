@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import BaseInput from "@/components/Base/BaseInput";
@@ -12,7 +18,7 @@ import * as SecureStore from "expo-secure-store";
 import { saveToken } from "@/utils/helpers";
 const validationSchema = Yup.object({
   name: Yup.string()
-    .min(6, "Name must be at least 3 characters")
+    .min(8, "Enter your full name")
     .required("Name is required"),
   email: Yup.string()
     .email("Invalid email address")
@@ -26,7 +32,7 @@ const validationSchema = Yup.object({
 });
 const SignUp = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const [error, setError] = useState<string | null>(null);
   const handleRegister = async (values: {
     name: string;
     email: string;
@@ -53,6 +59,7 @@ const SignUp = () => {
     } catch (error) {
       console.log("error: ", error);
       setIsLoading(false);
+      setError(error.response.data.message);
     }
   };
   return (
@@ -97,10 +104,10 @@ const SignUp = () => {
                     />
                   }
                   borderColor={
-                    touched.email && errors.email ? "#FF0000" : "#F5EB10"
+                    touched.name && errors.name ? "#FF0000" : "#F5EB10"
                   }
                 />
-                {touched.email && errors.email && (
+                {touched.name && errors.name && (
                   <Text style={styles.errorText}>{errors.name}</Text>
                 )}
                 <BaseInput
@@ -122,7 +129,7 @@ const SignUp = () => {
                   onChangeText={handleChange("password")}
                   onBlur={handleBlur("password")}
                   placeholder="Enter your password"
-                  secureTextEntry
+                  isPassword
                   icon={<MaterialIcons name="lock" size={24} color="#000" />}
                   borderColor={
                     touched.password && errors.password ? "#FF0000" : "#F5EB10"
@@ -136,15 +143,18 @@ const SignUp = () => {
                   onChangeText={handleChange("confirmPassword")}
                   onBlur={handleBlur("confirmPassword")}
                   placeholder="Confirm your password"
-                  secureTextEntry
+                  isPassword
                   icon={<MaterialIcons name="lock" size={24} color="#000" />}
                   borderColor={
-                    touched.password && errors.password ? "#FF0000" : "#F5EB10"
+                    touched.confirmPassword && errors.confirmPassword
+                      ? "#FF0000"
+                      : "#F5EB10"
                   }
                 />
-                {touched.password && errors.password && (
+                {touched.confirmPassword && errors.confirmPassword && (
                   <Text style={styles.errorText}>{errors.confirmPassword}</Text>
                 )}
+                {error && <Text style={styles.errorText}>{error}</Text>}
               </View>
             </View>
             <View style={styles.submit}>
@@ -183,8 +193,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
 
-    padding: 20,
-    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: Platform.OS === "ios" ? 50 : 10,
   },
   logo: {
     width: "100%",
@@ -198,6 +209,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
     flex: 1,
     alignItems: "center",
+    // marginBottom: 100,
   },
   submit: {
     width: "70%",

@@ -15,6 +15,7 @@ interface SearchBarProps extends TextInputProps {
   iconSize?: number; // Search icon size
   containerStyle?: ViewStyle; // Custom style for the container
   inputStyle?: TextStyle; // Custom style for the input field
+  onTextChange?: (text: string) => void;
 }
 
 const BaseSearchBar: React.FC<SearchBarProps> = ({
@@ -23,6 +24,7 @@ const BaseSearchBar: React.FC<SearchBarProps> = ({
   iconSize = 20,
   containerStyle,
   inputStyle,
+  onTextChange,
   ...textInputProps
 }) => {
   return (
@@ -38,6 +40,11 @@ const BaseSearchBar: React.FC<SearchBarProps> = ({
         placeholder={placeholder}
         placeholderTextColor="#A9A9A9"
         {...textInputProps}
+        onChange={(text) => {
+          if (onTextChange) {
+            onTextChange(text.nativeEvent.text);
+          }
+        }}
       />
     </View>
   );

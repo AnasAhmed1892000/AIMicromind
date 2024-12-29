@@ -11,6 +11,7 @@ import { API_Login } from "@/network/auth/index";
 import { saveToken } from "@/utils/helpers";
 const login = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const validationSchema = Yup.object({
     email: Yup.string()
       .email("Invalid email address")
@@ -38,6 +39,7 @@ const login = () => {
     } catch (error) {
       console.log(error);
       setIsLoading(false);
+      setError(error.response.data.message);
     }
   };
   return (
@@ -86,7 +88,7 @@ const login = () => {
                   onChangeText={handleChange("password")}
                   onBlur={handleBlur("password")}
                   placeholder="Enter your password"
-                  secureTextEntry
+                  isPassword
                   icon={<MaterialIcons name="lock" size={24} color="#000" />}
                   borderColor={
                     touched.password && errors.password ? "#FF0000" : "#F5EB10"
@@ -99,8 +101,9 @@ const login = () => {
                 {/* Forgot Password */}
 
                 {/* Submit Button */}
+                {error && <Text style={styles.errorText}>{error}</Text>}
               </View>
-              <View
+              {/* <View
                 style={{
                   width: "100%",
                   alignSelf: "flex-end",
@@ -113,7 +116,7 @@ const login = () => {
                 >
                   <Text style={styles.forgotPassword}>Forgot Password?</Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
             </View>
             <View style={styles.submit}>
               <BaseButton

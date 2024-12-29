@@ -33,7 +33,7 @@ interface VoiceRecorderProps {
   setIsRecording: React.Dispatch<React.SetStateAction<boolean>>;
   recordDuration: number;
   setRecordDuration: React.Dispatch<React.SetStateAction<number>>;
-  handleSend: () => void;
+  handleSendMessage: (voiceUri: string) => void;
 }
 const VoiceRecorder: FC<VoiceRecorderProps> = ({
   audioUri,
@@ -42,7 +42,7 @@ const VoiceRecorder: FC<VoiceRecorderProps> = ({
   setIsRecording,
   recordDuration,
   setRecordDuration,
-  handleSend,
+  handleSendMessage,
 }) => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [playbackState, setPlaybackState] = useState<"start" | "pause" | null>(
@@ -117,7 +117,8 @@ const VoiceRecorder: FC<VoiceRecorderProps> = ({
   };
   const SendVoice = () => {
     if (audioUri) {
-      handleSend();
+      console.log("sending voice ");
+      handleSendMessage(audioUri);
       handleDelete();
 
       // playbackObject.current = null;

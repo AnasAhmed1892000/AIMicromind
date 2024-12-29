@@ -39,13 +39,13 @@ export const API_Register = async (data: IRegisterData) => {
 //     data: data,
 //   });
 // };
-// export const API_UpdatePassword = async (data: IUpdatePasswordData) => {
-//   return await axiosInstance({
-//     url: endPoints.accounts.forget_password,
-//     method: "POST",
-//     data: data,
-//   });
-// };
+export const API_UpdatePassword = async (data: IUpdatePasswordData) => {
+  return await axiosInstance({
+    url: endPoints.accounts.updatePassword,
+    method: "PATCH",
+    data: data,
+  });
+};
 
 // export const API_CheckAccountStep = async (mobile_number: string) => {
 //   return await axiosInstance({
@@ -68,13 +68,12 @@ export const API_Register = async (data: IRegisterData) => {
 //   });
 // };
 
-// export const API_Logout = async (data: IConfirmInfoData) => {
-//   return await axiosInstance({
-//     url: endPoints.accounts.logout,
-//     method: "POST",
-//     data,
-//   });
-// };
+export const API_Logout = async () => {
+  return await axiosInstance({
+    url: endPoints.accounts.logout,
+    method: "GET",
+  });
+};
 // export const API_ConfirmInfo = async (data: IConfirmInfoData) => {
 //   return await axiosInstance({
 //     url: endPoints.accounts.confirm_info,

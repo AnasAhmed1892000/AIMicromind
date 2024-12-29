@@ -7,28 +7,52 @@ import { MaterialIcons } from "@expo/vector-icons";
 import HomeLogo from "@/assets/svgs/home-logo.svg";
 import BaseButton from "@/components/Base/BaseButton";
 import { router } from "expo-router";
+import { API_UpdatePassword } from "@/network/auth";
 
 const resetPassword = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const validationSchema = Yup.object({
-    password: Yup.string()
-      .min(6, "Password must be at least 6 characters")
+    currentPassword: Yup.string()
+      .min(8, "Password must be at least 8 characters")
+      .required("Password is required"),
+    newPassword: Yup.string()
+      .min(8, "Password must be at least 8 characters")
       .required("Password is required"),
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password")], "Passwords must match")
+      .oneOf([Yup.ref("newPassword")], "Passwords must match")
       .required("Confirm password is required"),
   });
 
-  const handleLogin = (values: {
-    password: string;
+  const updatePassword = async (values: {
+    currentPassword: string;
+    newPassword: string;
     confirmPassword: string;
-  }) => {};
+  }) => {
+    try {
+      setIsLoading(true);
+      const res = await API_UpdatePassword(values);
+      if (res.status === 200) {
+        setIsLoading(false);
+        alert("Password updated successfully, please login again.");
+        router.replace("/(auth)/login");
+      }
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+      setError(error.response.data.message);
+    }
+  };
   return (
     <View style={styles.container}>
       <Formik
-        initialValues={{ password: "", confirmPassword: "" }}
+        initialValues={{
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        }}
         validationSchema={validationSchema}
-        onSubmit={handleLogin}
+        onSubmit={updatePassword}
       >
         {({
           handleChange,
@@ -48,54 +72,66 @@ const resetPassword = () => {
             <View>
               <View style={styles.form}>
                 <BaseInput
-                  value={values.password}
-                  onChangeText={handleChange("password")}
-                  onBlur={handleBlur("password")}
-                  placeholder="Enter your password"
-                  secureTextEntry
+                  value={values.currentPassword}
+                  onChangeText={handleChange("currentPassword")}
+                  onBlur={handleBlur("currentPassword")}
+                  placeholder="Enter your old password"
+                  // secureTextEntry
+                  isPassword
                   icon={<MaterialIcons name="lock" size={24} color="#000" />}
                   borderColor={
-                    touched.password && errors.password ? "#FF0000" : "#F5EB10"
+                    touched.currentPassword && errors.currentPassword
+                      ? "#FF0000"
+                      : "#F5EB10"
                   }
                 />
-                {touched.password && errors.password && (
-                  <Text style={styles.errorText}>{errors.password}</Text>
+                {touched.currentPassword && errors.currentPassword && (
+                  <Text style={styles.errorText}>{errors.currentPassword}</Text>
+                )}
+                <BaseInput
+                  value={values.newPassword}
+                  onChangeText={handleChange("newPassword")}
+                  onBlur={handleBlur("newPassword")}
+                  placeholder="Enter your new password"
+                  isPassword
+                  icon={<MaterialIcons name="lock" size={24} color="#000" />}
+                  borderColor={
+                    touched.newPassword && errors.newPassword
+                      ? "#FF0000"
+                      : "#F5EB10"
+                  }
+                />
+                {touched.newPassword && errors.newPassword && (
+                  <Text style={styles.errorText}>{errors.newPassword}</Text>
                 )}
                 <BaseInput
                   value={values.confirmPassword}
                   onChangeText={handleChange("confirmPassword")}
                   onBlur={handleBlur("confirmPassword")}
-                  placeholder="Confirm your password"
-                  secureTextEntry
+                  placeholder="Confirm your new password"
+                  isPassword
                   icon={<MaterialIcons name="lock" size={24} color="#000" />}
                   borderColor={
-                    touched.password && errors.password ? "#FF0000" : "#F5EB10"
+                    touched.confirmPassword && errors.confirmPassword
+                      ? "#FF0000"
+                      : "#F5EB10"
                   }
                 />
-                {touched.password && errors.password && (
+                {touched.confirmPassword && errors.confirmPassword && (
                   <Text style={styles.errorText}>{errors.confirmPassword}</Text>
                 )}
                 {/* Submit Button */}
+                {error && <Text style={styles.errorText}>{error}</Text>}
               </View>
             </View>
             <View style={styles.submit}>
               <BaseButton
-                onPress={() => router.navigate("/(tabs)/home")}
-                text="Reset Password"
+                onPress={() => updatePassword(values)}
+                text="Update Password"
                 // style={styles.button}
                 isLoading={isLoading}
                 disabled={!isValid || !dirty}
               />
-              <TouchableOpacity
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "flex-start",
-                }}
-                onPress={() => router.navigate("/(auth)/login")}
-              >
-                <Text style={styles.signUpLink}>Back to Login</Text>
-              </TouchableOpacity>
             </View>
           </View>
         )}

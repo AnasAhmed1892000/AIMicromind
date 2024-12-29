@@ -19,9 +19,9 @@ export interface IVerifyOtpData {
   otp_type: string;
 }
 export interface IUpdatePasswordData {
-  mobile_number: string;
-  new_password: string;
-  confirm_password: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 export interface IConfirmInfoData {
   work_address: string;

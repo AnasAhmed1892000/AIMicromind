@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -7,58 +7,147 @@ import {
   TextInput,
   Image,
   TouchableOpacity,
-  Dimensions,
   Platform,
+  Alert,
+  ActivityIndicator,
+  Dimensions,
 } from "react-native";
-import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+
 import { MaterialIcons } from "@expo/vector-icons";
 import ChatItem from "@/components/ChatItem";
 import Logo from "@/assets/svgs/Chats-logo.svg";
+import ChatImage from "@/assets/svgs/chat-image.svg";
+import ChatIcon from "@/assets/svgs/chat-name-icon.svg";
+import UrlIcon from "@/assets/svgs/url-icon.svg";
 import ProfileIcon from "@/assets/svgs/person-outline.svg";
 import BaseSearchBar from "@/components/Base/BaseSearchBar";
 import { router } from "expo-router";
+import BaseModal from "@/components/Base/Modal";
+import BaseInput from "@/components/Base/BaseInput";
+import BaseButton from "@/components/Base/BaseButton";
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
+import { date } from "yup";
+import {
+  API_CreateChat,
+  API_DeleteChat,
+  API_GetChats,
+  API_GetMarketplace,
+} from "@/network/content";
+import MarketPlaceItem from "@/components/MarketPlaceItem";
 const { width } = Dimensions.get("window");
-const MarketplaceScreen = () => {
-  // const cardData = [
-  //   {
-  //     id: "1",
-  //     title: "Medical Agent",
-  //     description:
-  //       "This model analyzes the medical report to retrieve the diagnosis...",
-  //     icon: require("./assets/medical.png"), // Replace with your icon
-  //     backgroundColor: "#FFE4E1",
-  //   },
-  //   {
-  //     id: "2",
-  //     title: "Multilingual-Text-To-Speech",
-  //     description:
-  //       "Convert text in multiple languages, including English, German, Polish...",
-  //     icon: require("./assets/multilingual.png"), // Replace with your icon
-  //     backgroundColor: "#E6F1FF",
-  //   },
-  //   {
-  //     id: "3",
-  //     title: "Generate Blogpost",
-  //     description:
-  //       "Blog post generation using AI is a process that involves using machine learning...",
-  //     icon: require("./assets/blogpost.png"), // Replace with your icon
-  //     backgroundColor: "#E7F5E9",
-  //   },
-  //   {
-  //     id: "4",
-  //     title: "Zephyr-7B",
-  //     description:
-  //       "This model analyzes the medical report to retrieve the diagnosis...",
-  //     icon: require("./assets/zephyr.png"), // Replace with your icon
-  //     backgroundColor: "#F1E7FE",
-  //   },
-  // ];
+export interface LatestMessage {
+  _id: string;
+  sender: string;
+  text: string;
+  createdAt: string;
+}
+export interface TMarketplaceItem {
+  _id: string;
+  name: string;
+  description: string;
+  photo: string;
+  price: number;
+  chatUrl: string;
+  __v: number;
+}
 
-  const handleDelete = (id: string) => {
-    console.log(`Deleted chat with id: ${id}`);
-    // Implement delete logic
+const MarketplaceScreen = () => {
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [chatName, setChatName] = useState<string>("");
+  const [chatUrl, setChatUrl] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [selectedImage, setSelectedImage] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [marketplaceItems, setMarketplaceItems] = useState<
+    TMarketplaceItem[] | []
+  >([]);
+  const pickImage = async () => {
+    // Request permission to access the media library
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Permission Denied",
+        "You need to allow access to the gallery."
+      );
+      return;
+    }
+
+    // Launch the image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0]); // Update with the selected image's URI
+    } else {
+      Alert.alert("Cancelled", "Image selection was cancelled.");
+    }
   };
 
+  const onCancel = () => {
+    setModalVisible(false);
+    setSelectedImage(null);
+    setChatName("");
+    setChatUrl("");
+    setIsLoading(false);
+  };
+  const createChat = async () => {
+    const data = new FormData();
+    setIsLoading(true);
+    if (chatUrl) {
+      data.append("chatUrl", chatUrl);
+    }
+    if (chatName) {
+      data.append("chatName", chatName);
+    }
+    if (selectedImage?.uri) {
+      const photoBlob = await FileSystem.readAsStringAsync(selectedImage.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      // console.log("photoBlob");
+      // console.log("photoBlob", photoBlob);
+      data.append("chatphoto", {
+        uri: selectedImage.uri,
+        type: selectedImage.mimeType,
+        name: selectedImage.fileName,
+      });
+    }
+
+    try {
+      const response = await API_CreateChat(data);
+
+      // console.log(response.data);
+      onCancel();
+      router.navigate("/(tabs)/home");
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      onCancel();
+      setIsLoading(false);
+    }
+  };
+  const fetchMarketplaceItems = async () => {
+    try {
+      setIsLoading(true);
+      const response = await API_GetMarketplace();
+      if (response.status === 200) {
+        console.log(response.data.data.chats);
+        setMarketplaceItems(response.data.data.items);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.log("error inside chat :", error);
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchMarketplaceItems();
+  }, []);
   return (
     <View style={styles.container}>
       {/* Top Navigation */}
@@ -67,7 +156,15 @@ const MarketplaceScreen = () => {
           <Logo width={50} height={50} />
         </View>
         <View style={styles.bottomNav}>
-          <Text style={styles.title}>Marketplace</Text>
+          {/* <TouchableOpacity
+            style={styles.newChatButton}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.newChatText}>+</Text>
+          </TouchableOpacity> */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Marketplace</Text>
+          </View>
           <TouchableOpacity
             onPress={() => {
               router.navigate("/profile");
@@ -77,30 +174,85 @@ const MarketplaceScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+
       {/* Search Bar */}
       <BaseSearchBar
         placeholder="Search AI Model..."
         containerStyle={styles.searchBar}
       />
 
-      {/* Chat List */}
-      {/* <FlatList
-        data={cardData}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        renderItem={({ item }) => (
-          <View
-            style={[styles.card, { backgroundColor: item.backgroundColor }]}
-          >
-            <Image source={item.icon} style={styles.icon} />
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.description}>{item.description}</Text>
-          </View>
-        )}
-        contentContainerStyle={styles.listContainer}
-      /> */}
+      {!isLoading ? (
+        <FlatList
+          data={marketplaceItems}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <MarketPlaceItem
+              item={item}
+              onPress={() => {
+                console.log("first");
+                setChatUrl(item.chatUrl);
+                setModalVisible(true);
+              }}
+            />
+          )}
+          contentContainerStyle={styles.chatList}
+          numColumns={2}
+        />
+      ) : (
+        <ActivityIndicator />
+      )}
 
       {/* Bottom Navigation */}
+      <BaseModal
+        visible={isModalVisible}
+        onDismiss={() => {
+          setModalVisible(false);
+        }}
+        style={styles.modalContainer}
+      >
+        <TouchableOpacity style={styles.modalImage} onPress={pickImage}>
+          {selectedImage ? (
+            <Image source={{ uri: selectedImage.uri }} style={styles.image} />
+          ) : (
+            <ChatImage /> // Placeholder component
+          )}
+        </TouchableOpacity>
+        <View style={styles.modalInputsContainer}>
+          <BaseInput
+            value={chatUrl}
+            onChangeText={(value) => setChatUrl(value)}
+            // onBlur={handleBlur("name")}
+            placeholder="Enter chat URL"
+            icon={<UrlIcon />}
+            borderColor={"#F5EB10"}
+            style={styles.modalInputs}
+            disabled={true}
+          />
+          <BaseInput
+            value={chatName}
+            onChangeText={(value) => setChatName(value)}
+            // onBlur={handleBlur("name")}
+            placeholder="Enter chat name"
+            icon={<ChatIcon />}
+            borderColor={"#F5EB10"}
+            style={styles.modalInputs}
+          />
+        </View>
+        <BaseButton
+          onPress={() => createChat()}
+          text={"Create Chat"}
+          style={styles.modalBtn}
+          isLoading={isLoading}
+          disabled={chatName === "" || chatUrl === "" || selectedImage === null}
+        />
+        <BaseButton
+          onPress={() => onCancel()}
+          text={"Cancel"}
+          textColor="#fff"
+          backgroundColor="#000"
+          style={[styles.modalBtn, { marginBottom: 20 }]}
+        />
+      </BaseModal>
     </View>
   );
 };
@@ -130,6 +282,12 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
+  },
+  header: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 50,
   },
 
   navButton: {
@@ -203,9 +361,11 @@ const styles = StyleSheet.create({
   },
   newChatButton: {
     backgroundColor: "#F5EB10",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   newChatText: {
     fontSize: 16,
@@ -244,6 +404,34 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: "#6D6D6D",
+  },
+  modalContainer: {
+    marginTop: 50,
+  },
+  modalBtn: {
+    width: "90%",
+    // marginBottom: 10,
+  },
+  modalInputsContainer: {
+    width: "90%",
+    marginTop: 20,
+  },
+  modalInputs: {
+    marginVertical: 10,
+  },
+  modalImage: {
+    width: 75,
+    height: 75,
+    position: "absolute",
+    top: -25,
+    left: "50%",
+    // zIndex: 1000,
+    transform: [{ translateX: -35 }, { translateY: -12 }],
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 50,
   },
 });
 

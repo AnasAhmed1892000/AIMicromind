@@ -1,5 +1,12 @@
-import React from "react";
-import { View, TextInput, StyleSheet, TextInputProps } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TextInputProps,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface CustomInputProps extends TextInputProps {
   value: string;
@@ -14,7 +21,6 @@ const BaseInput: React.FC<CustomInputProps> = ({
   value,
   onChangeText,
   placeholder,
-  secureTextEntry = false,
   keyboardType = "default",
   icon,
   isPassword = false,
@@ -22,6 +28,12 @@ const BaseInput: React.FC<CustomInputProps> = ({
   disabled = false,
   ...props
 }) => {
+  const [secureTextEntry, setSecureTextEntry] = useState(isPassword);
+
+  const togglePasswordVisibility = () => {
+    setSecureTextEntry((prev) => !prev);
+  };
+
   return (
     <View style={[styles.container, { borderColor }]}>
       {icon && <View style={styles.iconContainer}>{icon}</View>}
@@ -36,7 +48,18 @@ const BaseInput: React.FC<CustomInputProps> = ({
         placeholderTextColor="#aaa"
         {...props}
       />
-      {isPassword && <View style={styles.iconContainer}>{icon}</View>}
+      {isPassword && (
+        <TouchableOpacity
+          onPress={togglePasswordVisibility}
+          style={styles.iconContainer}
+        >
+          <Ionicons
+            name={secureTextEntry ? "eye-off" : "eye"}
+            size={20}
+            color="#000"
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -53,7 +76,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   iconContainer: {
-    marginRight: 10,
+    marginLeft: 10,
   },
   input: {
     flex: 1,

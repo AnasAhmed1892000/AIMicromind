@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -20,18 +20,20 @@ import ChatIcon from "@/assets/svgs/chat-name-icon.svg";
 import UrlIcon from "@/assets/svgs/url-icon.svg";
 import ProfileIcon from "@/assets/svgs/person-outline.svg";
 import BaseSearchBar from "@/components/Base/BaseSearchBar";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import BaseModal from "@/components/Base/Modal";
 import BaseInput from "@/components/Base/BaseInput";
 import BaseButton from "@/components/Base/BaseButton";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
 import { date } from "yup";
 import {
   API_CreateChat,
   API_DeleteChat,
   API_GetChats,
 } from "@/network/content";
+import { ReadAsAsync } from "@/utils/helpers";
 const chatsss = [
   {
     id: "6767e936d085777df54e7efa",
@@ -71,11 +73,10 @@ export interface chat {
 const HomeScreen = () => {
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
   const [chatName, setChatName] = useState<string>("");
-  const [chatUrl, setChatUrl] = useState<string>(
-    "https://chatflow-aowb.onrender.com/api/v1/prediction/307171e5-e3d9-4e15-9494-ff5971225fe5"
-  );
+  const [chatUrl, setChatUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
   const [chats, setChats] = useState<chat[] | []>([]);
   const pickImage = async () => {
     // Request permission to access the media library
@@ -96,7 +97,7 @@ const HomeScreen = () => {
     });
 
     if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri); // Update with the selected image's URI
+      setSelectedImage(result.assets[0]); // Update with the selected image's URI
     } else {
       Alert.alert("Cancelled", "Image selection was cancelled.");
     }
@@ -121,14 +122,23 @@ const HomeScreen = () => {
     if (chatName) {
       data.append("chatName", chatName);
     }
-    if (selectedImage) {
-      data.append("chatphoto", selectedImage);
+    if (selectedImage?.uri) {
+      const photoBlob = await FileSystem.readAsStringAsync(selectedImage.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      // console.log("photoBlob");
+      // console.log("photoBlob", photoBlob);
+      data.append("chatphoto", {
+        uri: selectedImage.uri,
+        type: selectedImage.mimeType,
+        name: selectedImage.fileName,
+      });
     }
 
     try {
       const response = await API_CreateChat(data);
 
-      console.log(response.data);
+      // console.log(response.data);
       onCancel();
       fetchChats();
       setIsLoading(false);
@@ -142,7 +152,7 @@ const HomeScreen = () => {
     try {
       const response = await API_GetChats();
       if (response.status === 200) {
-        console.log(response.data.data);
+        // console.log(response.data.data);
         setChats(response.data.data.chats);
       }
     } catch (error) {
@@ -153,19 +163,28 @@ const HomeScreen = () => {
     try {
       const response = await API_DeleteChat(idToDelete);
       if (response.status === 200) {
-        setChats((prevChats) =>
-          prevChats.filter((chat) => chat._id !== idToDelete)
-        );
+        // setChats((prevChats) =>
+        //   prevChats.filter((chat) => chat._id !== idToDelete)
+        // );
         fetchChats();
         console.log(`Deleted chat with id: ${idToDelete}`);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleSearch = (text: string) => {
+    console.log(text);
   };
 
   useEffect(() => {
     fetchChats();
   }, []);
-
+  useFocusEffect(
+    useCallback(() => {
+      fetchChats();
+    }, []) // Dependency array ensures it's only run when focused
+  );
   return (
     <View style={styles.container}>
       {/* Top Navigation */}
@@ -195,6 +214,7 @@ const HomeScreen = () => {
       <BaseSearchBar
         placeholder="Search Chat..."
         containerStyle={styles.searchBar}
+        onTextChange={handleSearch}
       />
       {!isLoading ? (
         <FlatList
@@ -218,7 +238,7 @@ const HomeScreen = () => {
       >
         <TouchableOpacity style={styles.modalImage} onPress={pickImage}>
           {selectedImage ? (
-            <Image source={{ uri: selectedImage }} style={styles.image} />
+            <Image source={{ uri: selectedImage.uri }} style={styles.image} />
           ) : (
             <ChatImage /> // Placeholder component
           )}

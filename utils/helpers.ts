@@ -2,7 +2,7 @@ import { axios, AxiosError } from "axios";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { Alert } from "react-native";
-
+import * as FileSystem from "expo-file-system";
 export async function saveToken(key: string, value: string) {
   try {
     await SecureStore.setItemAsync(key, value);
@@ -54,6 +54,18 @@ export async function handleTokenExpires(error: AxiosError) {
     } catch (error) {
       console.error("Error handling expired token:", error);
     }
+  } else if (
+    error?.status === 401 &&
+    error.response.data.message ===
+      "Password was changed recently. Please login again."
+  ) {
+    try {
+      await deleteToken("token");
+      Alert.alert("Session Expired", error.response.data.message);
+      router.replace("/(auth)/login");
+    } catch (error) {
+      console.error("Error handling expired token:", error);
+    }
   }
 }
 export const truncateText = (text: string) => {
@@ -65,4 +77,13 @@ export const truncateText = (text: string) => {
   }
 
   return text;
+};
+export const ReadAsAsync = async (uri: string) => {
+  const fileBlob = await FileSystem.readAsStringAsync(uri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+};
+export const getFileType = (fileName: string) => {
+  const fileType = fileName.slice(fileName.lastIndexOf(".") + 1);
+  return fileType;
 };
