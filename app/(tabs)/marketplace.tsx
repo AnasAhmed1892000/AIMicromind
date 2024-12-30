@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -21,7 +21,7 @@ import ChatIcon from "@/assets/svgs/chat-name-icon.svg";
 import UrlIcon from "@/assets/svgs/url-icon.svg";
 import ProfileIcon from "@/assets/svgs/person-outline.svg";
 import BaseSearchBar from "@/components/Base/BaseSearchBar";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import BaseModal from "@/components/Base/Modal";
 import BaseInput from "@/components/Base/BaseInput";
 import BaseButton from "@/components/Base/BaseButton";
@@ -34,8 +34,11 @@ import {
   API_DeleteChat,
   API_GetChats,
   API_GetMarketplace,
+  API_SearchMarketplace,
+  API_UseMarketPlaceItem,
 } from "@/network/content";
 import MarketPlaceItem from "@/components/MarketPlaceItem";
+import { baseUrls } from "@/network";
 const { width } = Dimensions.get("window");
 export interface LatestMessage {
   _id: string;
@@ -57,7 +60,9 @@ const MarketplaceScreen = () => {
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
   const [chatName, setChatName] = useState<string>("");
   const [chatUrl, setChatUrl] = useState<string>("");
+  const [imageURL, setImageUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [selectedItemID, setSelectedItemID] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] =
     useState<ImagePicker.ImagePickerAsset | null>(null);
   const [marketplaceItems, setMarketplaceItems] = useState<
@@ -118,7 +123,7 @@ const MarketplaceScreen = () => {
     }
 
     try {
-      const response = await API_CreateChat(data);
+      const response = await API_UseMarketPlaceItem(selectedItemID || "");
 
       // console.log(response.data);
       onCancel();
@@ -145,9 +150,29 @@ const MarketplaceScreen = () => {
       setIsLoading(false);
     }
   };
+  const handleSearch = async (text: string) => {
+    try {
+      if (text === "") {
+        fetchMarketplaceItems();
+      } else {
+        const response = await API_SearchMarketplace(text);
+        if (response.status === 200) {
+          // console.log(response.data.data);
+          setMarketplaceItems(response.data.data.items);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
   useEffect(() => {
     fetchMarketplaceItems();
   }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchMarketplaceItems();
+    }, []) // Dependency array ensures it's only run when focused
+  );
   return (
     <View style={styles.container}>
       {/* Top Navigation */}
@@ -177,8 +202,9 @@ const MarketplaceScreen = () => {
 
       {/* Search Bar */}
       <BaseSearchBar
-        placeholder="Search AI Model..."
+        placeholder="Search Chat..."
         containerStyle={styles.searchBar}
+        onTextChange={handleSearch}
       />
 
       {!isLoading ? (
@@ -191,7 +217,10 @@ const MarketplaceScreen = () => {
               onPress={() => {
                 console.log("first");
                 setChatUrl(item.chatUrl);
+                setChatName(item.name);
+                setImageUrl(`${baseUrls.stage}${item.photo}`);
                 setModalVisible(true);
+                setSelectedItemID(item._id);
               }}
             />
           )}
@@ -210,9 +239,13 @@ const MarketplaceScreen = () => {
         }}
         style={styles.modalContainer}
       >
-        <TouchableOpacity style={styles.modalImage} onPress={pickImage}>
-          {selectedImage ? (
-            <Image source={{ uri: selectedImage.uri }} style={styles.image} />
+        <TouchableOpacity
+          style={styles.modalImage}
+          onPress={pickImage}
+          disabled={true}
+        >
+          {imageURL ? (
+            <Image source={{ uri: imageURL }} style={styles.image} />
           ) : (
             <ChatImage /> // Placeholder component
           )}
@@ -243,7 +276,6 @@ const MarketplaceScreen = () => {
           text={"Create Chat"}
           style={styles.modalBtn}
           isLoading={isLoading}
-          disabled={chatName === "" || chatUrl === "" || selectedImage === null}
         />
         <BaseButton
           onPress={() => onCancel()}

@@ -14,7 +14,9 @@ const MarketPlaceItem = ({
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <View style={styles.upperSection}>
         <Image
-          source={require("@/assets/images/marketplace-item.png")}
+          source={{
+            uri: `${baseUrls.stage}${item.photo}`,
+          }}
           style={{
             width: 160,
             height: 110,

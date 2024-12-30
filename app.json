@@ -1,8 +1,7 @@
 {
   "expo": {
     "splash": {
-      "image": "./assets/images/splash-icon/splash-icon.png",
-      "resizeMode": "center",
+      "image": "./assets/images/logo@3x.png",
       "backgroundColor": "#000000"
     },
     "name": "AImicromind",

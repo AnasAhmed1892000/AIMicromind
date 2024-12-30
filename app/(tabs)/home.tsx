@@ -32,6 +32,7 @@ import {
   API_CreateChat,
   API_DeleteChat,
   API_GetChats,
+  API_SearchChats,
 } from "@/network/content";
 import { ReadAsAsync } from "@/utils/helpers";
 const chatsss = [
@@ -173,8 +174,20 @@ const HomeScreen = () => {
       console.log(error);
     }
   };
-  const handleSearch = (text: string) => {
-    console.log(text);
+  const handleSearch = async (text: string) => {
+    try {
+      if (text === "") {
+        fetchChats();
+      } else {
+        const response = await API_SearchChats(text);
+        if (response.status === 200) {
+          // console.log(response.data.data);
+          setChats(response.data.data.chats);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -240,7 +253,7 @@ const HomeScreen = () => {
           {selectedImage ? (
             <Image source={{ uri: selectedImage.uri }} style={styles.image} />
           ) : (
-            <ChatImage /> // Placeholder component
+            <ChatImage />
           )}
         </TouchableOpacity>
         <View style={styles.modalInputsContainer}>

@@ -210,7 +210,7 @@ export default function ChatScreen() {
         )}
         {item.type === "photo" && (
           <Image
-            source={{ uri: `${baseUrls.stage}/chat-uploads/${item.file}` }}
+            source={{ uri: `${baseUrls.stage}${item.file}` }}
             style={{ width: 200, height: 200, borderRadius: 10 }}
           />
         )}
@@ -306,7 +306,7 @@ export default function ChatScreen() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{chatName}</Text>
           <Image
-            source={{ uri: `${baseUrls.stage}/img/chats/${imgUrl}` }} // Replace with your logo path
+            source={{ uri: `${baseUrls.stage}${imgUrl}` }} // Replace with your logo path
             style={styles.headerIcon}
           />
         </View>

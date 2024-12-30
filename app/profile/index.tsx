@@ -180,7 +180,7 @@ export default function ProfileScreen() {
                         source={{
                           uri: selectedImage?.uri
                             ? selectedImage.uri
-                            : `${baseUrls.stage}/img/users/${profileData?.photo}`,
+                            : `${baseUrls.stage}${profileData?.photo}`,
                         }}
                         style={styles.profileImage}
                       />

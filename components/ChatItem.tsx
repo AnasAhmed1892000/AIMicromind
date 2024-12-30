@@ -22,6 +22,7 @@ const ChatItem = ({
   item: chat;
   onDelete: (id: string) => void;
 }) => {
+  console.log(item.chatPhoto);
   const renderRightActions = () => (
     <TouchableOpacity
       style={styles.deleteButton}
@@ -52,7 +53,7 @@ const ChatItem = ({
       >
         <View style={styles.chatItem}>
           <Image
-            source={{ uri: `${baseUrls.stage}/img/chats/${item.chatPhoto}` }}
+            source={{ uri: `${baseUrls.stage}${item.chatPhoto}` }}
             style={styles.chatImage}
           />
           <View style={styles.chatDetails}>

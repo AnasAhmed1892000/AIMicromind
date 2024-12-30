@@ -14,9 +14,21 @@ export const API_CreateChat = async (data: FormData) => {
     data,
   });
 };
+export const API_UseMarketPlaceItem = async (id: string) => {
+  return await axiosInstance({
+    url: `/api/v1/marketplace/${id}/use`,
+    method: "POST",
+  });
+};
 export const API_GetChats = async () => {
   return await axiosInstance({
     url: endPoints.content.getChats,
+    method: "GET",
+  });
+};
+export const API_SearchChats = async (searchTerm: string) => {
+  return await axiosInstance({
+    url: `/api/v1/chats/my-chats/?search=${searchTerm}`,
     method: "GET",
   });
 };
@@ -45,6 +57,12 @@ export const API_SendMessage = async (id: string, data: FormData) => {
 export const API_GetMarketplace = async () => {
   return await axiosInstance({
     url: endPoints.content.getMarketplace,
+    method: "GET",
+  });
+};
+export const API_SearchMarketplace = async (searchTerm: string) => {
+  return await axiosInstance({
+    url: `/api/v1/marketplace/?search=${searchTerm}`,
     method: "GET",
   });
 };

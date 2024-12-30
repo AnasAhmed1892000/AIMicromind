@@ -43,21 +43,10 @@ export function formatTimeTo12Hour(isoString: string): string {
   return `${hours}:${minutes} ${amPm}`; // Return the formatted time
 }
 export async function handleTokenExpires(error: AxiosError) {
-  if (error?.status === 500 && error.response.data.message === "jwt expired") {
-    try {
-      await deleteToken("token");
-      Alert.alert(
-        "Session Expired",
-        "Your session has expired. Please log in again."
-      );
-      router.replace("/(auth)/login");
-    } catch (error) {
-      console.error("Error handling expired token:", error);
-    }
-  } else if (
+  console.log(error.response.data.message);
+  if (
     error?.status === 401 &&
-    error.response.data.message ===
-      "Password was changed recently. Please login again."
+    error?.response?.data?.message !== "Invalid email or password. Try again."
   ) {
     try {
       await deleteToken("token");
