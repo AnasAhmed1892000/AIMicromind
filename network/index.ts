@@ -3,10 +3,11 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
 export const baseUrls = {
   stage: "https://micromind-api-1.onrender.com",
+  dev: "https://micromind-api-dev.onrender.com",
 };
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: baseUrls.stage,
+  baseURL: baseUrls.dev,
   headers: {
     "Content-Type": "application/json",
   },

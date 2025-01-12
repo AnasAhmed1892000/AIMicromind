@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginLeft: 10,
+    marginRight: 5,
   },
   input: {
     flex: 1,

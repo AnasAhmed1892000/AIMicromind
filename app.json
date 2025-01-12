@@ -2,13 +2,14 @@
   "expo": {
     "splash": {
       "image": "./assets/images/logo@3x.png",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#000000",
+      "resizeMode": "contain"
     },
-    "name": "AImicromind",
-    "slug": "AImicromind",
+    "name": "AIMicromind",
+    "slug": "AIMicromind",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/splash-icon/splash-icon.png",
+    "icon": "./assets/images/logo@3x.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

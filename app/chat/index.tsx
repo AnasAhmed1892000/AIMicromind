@@ -44,7 +44,7 @@ import { baseUrls } from "@/network";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import GenericFileViewer from "@/components/GenericFileViewer";
-
+import LottieView from "lottie-react-native";
 export interface TMessage {
   type: string;
   _id: string;
@@ -79,7 +79,9 @@ export default function ChatScreen() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<TFile | null>(null);
   const [selectedFileURI, setSelectedFileURI] = useState<string | null>(null);
+  const [isBotTyping, setIsBotTyping] = useState<boolean>(false);
   const [page, setPage] = useState(1);
+
   const pickImage = async () => {
     // Request permission to access the media library
     const permissionResult =
@@ -123,6 +125,24 @@ export default function ChatScreen() {
     }
   };
   const handleSendMessage = async (voiceUri?: string) => {
+    const tempMessage: TMessage = {
+      _id: `${Date.now()}`, // Temporary ID
+      chat: chatId as string,
+      sender: "user", // Assuming "user" represents the current user
+      text: message,
+      type: voiceUri
+        ? "audio"
+        : selectedImage
+        ? "photo"
+        : selectedFile
+        ? "file"
+        : "text",
+      file: selectedImage || voiceUri || selectedFileURI || "",
+      starred: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      __v: 0,
+    };
     const formData = new FormData();
     formData.append("chatUrl", chatURL);
     if (message) formData.append("text", message);
@@ -154,16 +174,30 @@ export default function ChatScreen() {
         type: selectedFile.mimeType,
       });
     }
+    setMessage("");
+    setSelectedFile(null);
+    setSelectedFileURI(null);
+    setSelectedImage(null);
+    setAudioUri(null);
+    setMessages((prevMessages) => [tempMessage, ...prevMessages]);
+    setIsBotTyping(true);
     const res = await API_SendMessage(chatId as string, formData);
-
+    console.log("res : ", res);
     if (res.status === 200) {
       console.log("respond to voice message :", res.data);
-      getChatMessages(chatId as string);
-      setMessage("");
-      setSelectedFile(null);
-      setSelectedFileURI(null);
-      setSelectedImage(null);
-      setAudioUri(null);
+      // getChatMessages(chatId as string);
+      setMessages((prevMessages) => {
+        // Replace the temporary message with the user message
+        const updatedMessages = prevMessages.map((msg) =>
+          msg._id === tempMessage._id
+            ? { ...msg, ...res.data.data.userMessage }
+            : msg
+        );
+
+        // Add the bot's message to the updated array using the spread operator
+        return [res.data.data.botMessage, ...updatedMessages];
+      });
+      setIsBotTyping(false);
     }
   };
   const getChatDetails = async () => {
@@ -246,7 +280,7 @@ export default function ChatScreen() {
     try {
       const response = await API_GetChatMessages(chatId);
       if (response.status === 200) {
-        console.log(response.data.data.messages);
+        // console.dir(response.data.data.messages, { depth: null });
         setMessages(response.data.data.messages);
         setIsLoading(false);
       }
@@ -329,6 +363,16 @@ export default function ChatScreen() {
 
         {/* Input Field */}
         <View style={styles.inputContainer}>
+          {isBotTyping && (
+            <View style={styles.typingIndicator}>
+              <LottieView
+                source={require("../../assets/Animation-typing.json")}
+                autoPlay
+                loop
+                style={{ width: 150, height: 150 }}
+              />
+            </View>
+          )}
           <View style={styles.iconsContainer}>
             <TouchableOpacity
               onPress={pickFile}
@@ -515,6 +559,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
+  },
+  typingIndicator: {
+    position: "absolute",
+    top: -85,
+    left: "35%",
   },
 });
 // export default ChatScreen;
