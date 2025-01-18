@@ -7,12 +7,12 @@ export const baseUrls = {
 };
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: baseUrls.DEV,
+  baseURL: baseUrls.PROD,
   headers: {
     "Content-Type": "application/json",
   },
 });
-export const baseUrl = baseUrls.DEV;
+export const baseUrl = baseUrls.PROD;
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const token = getToken("token");
