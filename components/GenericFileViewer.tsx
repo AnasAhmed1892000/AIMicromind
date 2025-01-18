@@ -6,7 +6,7 @@ import {
   FontAwesome5,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { baseUrls } from "@/network";
+import { baseUrl, baseUrls } from "@/network";
 export interface Root {
   mimeType: string;
   name: string;
@@ -17,7 +17,7 @@ const GenericFileViewer: FC<Root> = ({ mimeType, name, FileUri }) => {
   const downloadFile = async () => {
     try {
       const downloadResumable = FileSystem.createDownloadResumable(
-        baseUrls.stage + "/chat-uploads/" + FileUri,
+        baseUrl + "/chat-uploads/" + FileUri,
         FileSystem.documentDirectory + name
       );
       const { uri } = await downloadResumable.downloadAsync();

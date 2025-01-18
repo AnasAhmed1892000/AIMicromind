@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import React from "react";
 import { TMarketplaceItem } from "@/app/(tabs)/marketplace";
-import { baseUrls } from "@/network";
+import { baseUrl, baseUrls } from "@/network";
 
 const MarketPlaceItem = ({
   item,
@@ -15,7 +15,7 @@ const MarketPlaceItem = ({
       <View style={styles.upperSection}>
         <Image
           source={{
-            uri: `${baseUrls.stage}${item.photo}`,
+            uri: `${baseUrl}${item.photo}`,
           }}
           style={{
             width: 160,

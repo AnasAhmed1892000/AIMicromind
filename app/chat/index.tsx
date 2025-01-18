@@ -40,11 +40,12 @@ import {
   API_GetChatMessages,
   API_SendMessage,
 } from "@/network/content";
-import { baseUrls } from "@/network";
+import { baseUrl, baseUrls } from "@/network";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import GenericFileViewer from "@/components/GenericFileViewer";
 import LottieView from "lottie-react-native";
+import Markdown from "react-native-markdown-display";
 export interface TMessage {
   type: string;
   _id: string;
@@ -226,53 +227,51 @@ export default function ChatScreen() {
       __v: number;
     };
   }) => (
-    <View>
-      <View
-        style={[
-          styles.messageContainer,
-          item.sender === "user" ? styles.userMessage : styles.supportMessage,
-        ]}
-      >
-        {item.type === "file" && (
-          <GenericFileViewer
-            FileUri={item.file}
-            mimeType={getFileType(item.file)}
-            name={item.file.slice(0, 8) + "..."}
+    <View
+      style={[
+        styles.messageContainer,
+        item.sender === "user" ? styles.userMessage : styles.supportMessage,
+      ]}
+    >
+      {item.type === "file" && (
+        <GenericFileViewer
+          FileUri={item.file}
+          mimeType={getFileType(item.file)}
+          name={item.file.slice(0, 8) + "..."}
 
-            // style={{ width: 200, height: 200, borderRadius: 10 }}
-          />
-        )}
-        {item.type === "photo" && (
-          <Image
-            source={{ uri: `${baseUrls.stage}${item.file}` }}
-            style={{ width: 200, height: 200, borderRadius: 10 }}
-          />
-        )}
-        {item.type === "audio" && (
-          <MessageWithAudio
-            audioUri={item.text}
-            // duration={item 0}
-          />
-        )}
-        {item.text !== "" && item.type !== "audio" && (
-          <Text
-            style={
-              item.sender === "user"
+          // style={{ width: 200, height: 200, borderRadius: 10 }}
+        />
+      )}
+      {item.type === "photo" && (
+        <Image
+          source={{
+            uri: item.sender === "user" ? `${baseUrl}${item.file}` : item.file,
+          }}
+          style={{ width: 200, height: 200, borderRadius: 10 }}
+        />
+      )}
+      {item.type === "audio" && (
+        <MessageWithAudio
+          audioUri={item.text}
+          // duration={item 0}
+        />
+      )}
+      {item.text !== "" && item.type !== "audio" && (
+        <Markdown
+          style={{
+            body: {
+              ...(item.sender === "user"
                 ? styles.userMessageText
-                : styles.supportMessageText
-            }
-          >
-            {item.text}
-          </Text>
-        )}
-        <Text style={styles.messageTime}>
-          {formatTimeTo12Hour(item.createdAt)}
-        </Text>
-      </View>
-
-      {/* {item.type === "file" && (
-        <MaterialCommunityIcons name="file" size={24} color="#000" />
-      )} */}
+                : styles.supportMessageText),
+            },
+          }}
+        >
+          {item.text}
+        </Markdown>
+      )}
+      <Text style={styles.messageTime}>
+        {formatTimeTo12Hour(item.createdAt)}
+      </Text>
     </View>
   );
   const getChatMessages = async (chatId: string, page = 1) => {
@@ -340,7 +339,7 @@ export default function ChatScreen() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{chatName}</Text>
           <Image
-            source={{ uri: `${baseUrls.stage}${imgUrl}` }} // Replace with your logo path
+            source={{ uri: `${baseUrl}${imgUrl}` }} // Replace with your logo path
             style={styles.headerIcon}
           />
         </View>
@@ -356,8 +355,9 @@ export default function ChatScreen() {
             renderItem={renderMessage}
             keyExtractor={(item) => item._id}
             contentContainerStyle={styles.chatList}
-            onScrollEndDrag={() => setPage((prev) => prev + 1)}
+            // onScrollEndDrag={() => setPage((prev) => prev + 1)}
             inverted
+            onEndReached={() => setPage((prev) => prev + 1)}
           />
         )}
 
@@ -473,10 +473,14 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   messageContainer: {
-    maxWidth: "80%",
-    marginVertical: 5,
+    flexWrap: "wrap",
+    // flexDirection: "row",
+
+    alignItems: "flex-start",
     padding: 10,
-    borderRadius: 10,
+    margin: 5,
+    backgroundColor: "#000", // For visibility in your case
+    borderRadius: 8,
   },
   userMessage: {
     alignSelf: "flex-end",

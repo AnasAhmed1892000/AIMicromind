@@ -12,7 +12,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { chat } from "@/app/(tabs)/home";
-import { baseUrls } from "@/network";
+import { baseUrl, baseUrls } from "@/network";
 import { formatTimeTo12Hour, truncateText } from "@/utils/helpers";
 
 const ChatItem = ({
@@ -53,7 +53,7 @@ const ChatItem = ({
       >
         <View style={styles.chatItem}>
           <Image
-            source={{ uri: `${baseUrls.stage}${item.chatPhoto}` }}
+            source={{ uri: `${baseUrl}${item.chatPhoto}` }}
             style={styles.chatImage}
           />
           <View style={styles.chatDetails}>

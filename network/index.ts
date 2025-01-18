@@ -2,17 +2,17 @@ import { getToken, handleTokenExpires } from "@/utils/helpers";
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
 export const baseUrls = {
-  stage: "https://micromind-api-1.onrender.com",
-  dev: "https://micromind-api-dev.onrender.com",
+  PROD: "https://micromind-api-1.onrender.com",
+  DEV: "https://micromind-api-dev.onrender.com",
 };
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: baseUrls.dev,
+  baseURL: baseUrls.DEV,
   headers: {
     "Content-Type": "application/json",
   },
 });
-
+export const baseUrl = baseUrls.DEV;
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const token = getToken("token");

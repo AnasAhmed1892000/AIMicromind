@@ -11,6 +11,7 @@ import {
   Alert,
   ActivityIndicator,
   Dimensions,
+  Linking,
 } from "react-native";
 
 import { MaterialIcons } from "@expo/vector-icons";
@@ -38,7 +39,7 @@ import {
   API_UseMarketPlaceItem,
 } from "@/network/content";
 import MarketPlaceItem from "@/components/MarketPlaceItem";
-import { baseUrls } from "@/network";
+import { baseUrl, baseUrls } from "@/network";
 const { width } = Dimensions.get("window");
 export interface LatestMessage {
   _id: string;
@@ -218,7 +219,7 @@ const MarketplaceScreen = () => {
                 console.log("first");
                 setChatUrl(item.chatUrl);
                 setChatName(item.name);
-                setImageUrl(`${baseUrls.stage}${item.photo}`);
+                setImageUrl(`${baseUrl}${item.photo}`);
                 setModalVisible(true);
                 setSelectedItemID(item._id);
               }}
@@ -230,7 +231,23 @@ const MarketplaceScreen = () => {
       ) : (
         <ActivityIndicator />
       )}
-
+      <TouchableOpacity
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+        }}
+        onPress={() =>
+          Linking.openURL(
+            "https://isg43xwbg89z.larksuite.com/share/base/form/shrlgLtjNKkCVWc1pZzc1DPk1Ke"
+          )
+        }
+      >
+        <Text style={styles.signUp}> for more suggestions ?</Text>
+        <Text style={styles.signUpLink}>Check it out here</Text>
+      </TouchableOpacity>
       {/* Bottom Navigation */}
       <BaseModal
         visible={isModalVisible}
@@ -464,6 +481,23 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 50,
+  },
+  signUp: {
+    alignSelf: "flex-end",
+    marginTop: 10,
+    fontSize: 14,
+    color: "#000",
+    textDecorationLine: "underline",
+
+    paddingRight: 3,
+  },
+  signUpLink: {
+    alignSelf: "flex-end",
+    marginTop: 10,
+    fontSize: 14,
+    color: "#F5EB10",
+    textDecorationLine: "underline",
+    paddingRight: 3,
   },
 });
 

@@ -20,7 +20,7 @@ import BackgroundWrapper from "@/components/BackgroundWrapper";
 import images from "@/assets/images/images";
 import BaseHeader from "@/components/Base/BaseHeader";
 import { API_GetUserProfile, API_UpdateProfile } from "@/network/content";
-import { baseUrls } from "@/network";
+import { baseUrl, baseUrls } from "@/network";
 import * as ImagePicker from "expo-image-picker";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import * as FileSystem from "expo-file-system";
@@ -180,7 +180,7 @@ export default function ProfileScreen() {
                         source={{
                           uri: selectedImage?.uri
                             ? selectedImage.uri
-                            : `${baseUrls.stage}${profileData?.photo}`,
+                            : `${baseUrl}${profileData?.photo}`,
                         }}
                         style={styles.profileImage}
                       />

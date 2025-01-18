@@ -81,8 +81,12 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    width: "100%",
+    height: "100%",
     fontSize: 16,
     color: "#000",
+    overflow: "hidden",
+    paddingRight: 30,
   },
 });
 

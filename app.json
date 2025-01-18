@@ -18,8 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/ic_launcher.png",
+        "backgroundColor": "#000000"
       },
       "package": "com.anaseltanany.AImicromind"
     },

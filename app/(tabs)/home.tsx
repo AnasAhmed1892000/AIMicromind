@@ -281,7 +281,7 @@ const HomeScreen = () => {
           text={"Create Chat"}
           style={styles.modalBtn}
           isLoading={isLoading}
-          disabled={chatName === "" || chatUrl === "" || selectedImage === null}
+          disabled={chatName === "" || chatUrl === ""}
         />
         <BaseButton
           onPress={() => onCancel()}
@@ -423,6 +423,10 @@ const styles = StyleSheet.create({
   },
   modalInputs: {
     marginVertical: 10,
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    paddingRight: 30,
   },
   modalImage: {
     width: 75,
