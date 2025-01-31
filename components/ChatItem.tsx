@@ -14,7 +14,8 @@ import { router } from "expo-router";
 import { chat } from "@/app/(tabs)/home";
 import { baseUrl, baseUrls } from "@/network";
 import { formatTimeTo12Hour, truncateText } from "@/utils/helpers";
-
+import TrashIcon from "../assets/images/trash.svg";
+import MarkDefaultIcon from "../assets/images/mark-default.svg";
 const ChatItem = ({
   item,
   onDelete,
@@ -24,18 +25,39 @@ const ChatItem = ({
 }) => {
   console.log(item.chatPhoto);
   const renderRightActions = () => (
-    <TouchableOpacity
-      style={styles.deleteButton}
-      onPress={(event) => {
-        // event.preventDefault();
-        event.stopPropagation();
-        onDelete(item._id);
-      }}
-    >
-      <MaterialIcons name="delete" size={24} color="#fff" />
-    </TouchableOpacity>
-  );
+    <View style={styles.rightActions}>
+      {/* Mark as Default Button */}
+      <TouchableOpacity
+        style={[styles.actionButton, styles.markDefaultButton]}
+        onPress={(event) => {
+          event.stopPropagation();
+          console.log("Marked as default:", item._id);
+          // Add logic to mark chat as default
+        }}
+      >
+        <MarkDefaultIcon />
+      </TouchableOpacity>
 
+      {/* Delete Button */}
+      <TouchableOpacity
+        style={[styles.actionButton, styles.deleteBtn]}
+        onPress={(event) => {
+          event.stopPropagation();
+          onDelete(item._id);
+        }}
+      >
+        <TrashIcon />
+      </TouchableOpacity>
+    </View>
+  );
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  };
   return (
     <Swipeable renderRightActions={renderRightActions}>
       <TouchableOpacity
@@ -71,8 +93,11 @@ const ChatItem = ({
                     ? truncateText(item.latestMessage?.text)
                     : "Hey there!"}
                 </Text>
+
                 <Text style={styles.chatTime}>
-                  {formatTimeTo12Hour(item.latestMessage.createdAt)}
+                  {new Intl.DateTimeFormat("en-US", options).format(
+                    new Date(item.latestMessage.createdAt)
+                  )}
                 </Text>
               </View>
             )}
@@ -154,7 +179,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: 70,
-    borderRadius: 10,
+
     marginBottom: 10,
   },
   bottomNav: {
@@ -181,5 +206,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#777",
     marginTop: 5,
+  },
+  rightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginBottom: 10,
+  },
+  actionButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 70,
+    height: "100%",
+    // borderRadius: 10,
+  },
+  markDefaultButton: {
+    backgroundColor: "#F5EB10", // Green for marking default
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  deleteBtn: {
+    backgroundColor: "#FF3B30", // Red for delete
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
   },
 });

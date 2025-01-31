@@ -20,7 +20,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import * as FileSystem from "expo-file-system";
-import images from "../../assets/images/images";
 import { router, useLocalSearchParams } from "expo-router";
 import Send from "@/assets/svgs/send-icon.svg";
 import Record from "@/assets/svgs/record-icon.svg";
@@ -46,6 +45,8 @@ import * as DocumentPicker from "expo-document-picker";
 import GenericFileViewer from "@/components/GenericFileViewer";
 import LottieView from "lottie-react-native";
 import Markdown from "react-native-markdown-display";
+import ChatDropdown from "@/components/ChatDropDown";
+
 export interface TMessage {
   type: string;
   _id: string;
@@ -338,10 +339,18 @@ export default function ChatScreen() {
             <Ionicons name="chevron-back" size={30} color="#000" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{chatName}</Text>
-          <Image
-            source={{ uri: `${baseUrl}${imgUrl}` }} // Replace with your logo path
-            style={styles.headerIcon}
-          />
+          <View style={styles.headerIcons}>
+            <Image
+              source={{ uri: `${baseUrl}${imgUrl}` }} // Replace with your logo path
+              style={styles.headerIcon}
+            />
+            <ChatDropdown
+              handleStaredMessages={() => null}
+              onClearHistory={() => null}
+              onDelete={() => null}
+              onSetDefault={() => null}
+            />
+          </View>
         </View>
         {isLoadingMore ? <ActivityIndicator color="#000" /> : <></>}
         {/* Chat List */}
@@ -379,7 +388,7 @@ export default function ChatScreen() {
               disabled={audioUri || isRecording ? true : false}
               style={styles.iconButton}
             >
-              <Attach size={24} />
+              <Attach />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={pickImage}
@@ -414,7 +423,7 @@ export default function ChatScreen() {
               onPress={() => handleSendMessage()}
               style={styles.iconButton}
             >
-              <Send size={20} />
+              <Send />
             </TouchableOpacity>
           ) : (
             <>
@@ -423,7 +432,7 @@ export default function ChatScreen() {
                   onPress={() => handleSendMessage()}
                   style={styles.iconButton}
                 >
-                  <Send size={20} />
+                  <Send />
                 </TouchableOpacity>
               ) : (
                 <VoiceRecorder
@@ -568,6 +577,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -85,
     left: "35%",
+  },
+  headerIcons: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 // export default ChatScreen;

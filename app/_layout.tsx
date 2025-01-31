@@ -12,7 +12,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
-
+import { Provider as PaperProvider } from "react-native-paper";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { getToken } from "@/utils/helpers";
@@ -52,9 +52,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <GestureHandlerRootView>
-        <Slot />
-      </GestureHandlerRootView>
+      <PaperProvider>
+        <GestureHandlerRootView>
+          <Slot />
+        </GestureHandlerRootView>
+      </PaperProvider>
     </ThemeProvider>
   );
 }
