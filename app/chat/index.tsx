@@ -46,7 +46,9 @@ import GenericFileViewer from "@/components/GenericFileViewer";
 import LottieView from "lottie-react-native";
 import Markdown from "react-native-markdown-display";
 import ChatDropdown from "@/components/ChatDropDown";
-
+import HoldMessageDropDown from "@/components/HoldMessageDropDown";
+import AdjustableImage from "@/components/Base/BaseImage";
+import * as Clipboard from "expo-clipboard";
 export interface TMessage {
   type: string;
   _id: string;
@@ -83,7 +85,8 @@ export default function ChatScreen() {
   const [selectedFileURI, setSelectedFileURI] = useState<string | null>(null);
   const [isBotTyping, setIsBotTyping] = useState<boolean>(false);
   const [page, setPage] = useState(1);
-
+  const [isMessageOptionsOpen, setIsMessageOptionsOpen] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const pickImage = async () => {
     // Request permission to access the media library
     const permissionResult =
@@ -227,54 +230,68 @@ export default function ChatScreen() {
       updatedAt: string;
       __v: number;
     };
-  }) => (
-    <View
-      style={[
-        styles.messageContainer,
-        item.sender === "user" ? styles.userMessage : styles.supportMessage,
-      ]}
-    >
-      {item.type === "file" && (
-        <GenericFileViewer
-          FileUri={item.file}
-          mimeType={getFileType(item.file)}
-          name={item.file.slice(0, 8) + "..."}
-
-          // style={{ width: 200, height: 200, borderRadius: 10 }}
-        />
-      )}
-      {item.type === "photo" && (
-        <Image
-          source={{
-            uri: item.sender === "user" ? `${baseUrl}${item.file}` : item.file,
-          }}
-          style={{ width: 200, height: 200, borderRadius: 10 }}
-        />
-      )}
-      {item.type === "audio" && (
-        <MessageWithAudio
-          audioUri={item.text}
-          // duration={item 0}
-        />
-      )}
-      {item.text !== "" && item.type !== "audio" && (
-        <Markdown
-          style={{
-            body: {
-              ...(item.sender === "user"
-                ? styles.userMessageText
-                : styles.supportMessageText),
-            },
-          }}
+  }) => {
+    const handleCopy = async () => {
+      console.log(item.text);
+      try {
+        await Clipboard.setStringAsync(item.text);
+        // setIsMessageOptionsOpen(false);
+        setOpenMenuId(null);
+      } catch (error) {
+        Alert.alert("Error", "Failed to copy message.");
+      }
+    };
+    return (
+      <TouchableOpacity onLongPress={() => setOpenMenuId(item._id)}>
+        <View
+          style={[
+            styles.messageContainer,
+            item.sender === "user" ? styles.userMessage : styles.supportMessage,
+          ]}
         >
-          {item.text}
-        </Markdown>
-      )}
-      <Text style={styles.messageTime}>
-        {formatTimeTo12Hour(item.createdAt)}
-      </Text>
-    </View>
-  );
+          {item.type === "file" && (
+            <GenericFileViewer
+              FileUri={item.file}
+              mimeType={getFileType(item.file)}
+              name={item.file.slice(0, 8) + "..."}
+
+              // style={{ width: 200, height: 200, borderRadius: 10 }}
+            />
+          )}
+          {item.type === "photo" && <AdjustableImage item={item} />}
+          {item.type === "audio" && (
+            <MessageWithAudio
+              audioUri={item.text}
+              // duration={item 0}
+            />
+          )}
+          {item.text !== "" && item.type !== "audio" && (
+            <Markdown
+              style={{
+                body: {
+                  ...(item.sender === "user"
+                    ? styles.userMessageText
+                    : styles.supportMessageText),
+                },
+              }}
+            >
+              {item.text}
+            </Markdown>
+          )}
+          <Text style={styles.messageTime}>
+            {formatTimeTo12Hour(item.createdAt)}
+          </Text>
+          <HoldMessageDropDown
+            visible={openMenuId === item._id} // Only show menu for the current message
+            setVisible={(visible: boolean) =>
+              setOpenMenuId(visible ? item._id : null)
+            }
+            onCopy={handleCopy}
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  };
   const getChatMessages = async (chatId: string, page = 1) => {
     setIsLoading(true);
     try {
@@ -367,6 +384,7 @@ export default function ChatScreen() {
             // onScrollEndDrag={() => setPage((prev) => prev + 1)}
             inverted
             onEndReached={() => setPage((prev) => prev + 1)}
+            onEndReachedThreshold={0.5}
           />
         )}
 
@@ -484,7 +502,7 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexWrap: "wrap",
     // flexDirection: "row",
-
+    position: "relative",
     alignItems: "flex-start",
     padding: 10,
     margin: 5,
