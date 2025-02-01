@@ -116,6 +116,7 @@ const SignUp = () => {
                   onBlur={handleBlur("email")}
                   placeholder="Enter your email"
                   keyboardType="email-address"
+                  paddingRight={5}
                   icon={<MaterialIcons name="email" size={24} color="#000" />}
                   borderColor={
                     touched.email && errors.email ? "#FF0000" : "#F5EB10"

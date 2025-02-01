@@ -15,6 +15,7 @@ interface CustomInputProps extends TextInputProps {
   borderColor?: string;
   isPassword?: boolean;
   disabled?: boolean;
+  paddingRight?: number;
 }
 
 const BaseInput: React.FC<CustomInputProps> = ({
@@ -26,6 +27,7 @@ const BaseInput: React.FC<CustomInputProps> = ({
   isPassword = false,
   borderColor = "#ccc",
   disabled = false,
+  paddingRight = 45,
   ...props
 }) => {
   const [secureTextEntry, setSecureTextEntry] = useState(isPassword);
@@ -35,7 +37,12 @@ const BaseInput: React.FC<CustomInputProps> = ({
   };
 
   return (
-    <View style={[styles.container, { borderColor }]}>
+    <View
+      style={[
+        styles.container,
+        { borderColor, paddingRight: isPassword ? 10 : paddingRight },
+      ]}
+    >
       {icon && <View style={styles.iconContainer}>{icon}</View>}
       <TextInput
         value={value}
@@ -43,6 +50,11 @@ const BaseInput: React.FC<CustomInputProps> = ({
         placeholder={placeholder}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
+        multiline={!isPassword}
+        numberOfLines={1}
+        textAlignVertical="center"
+        scrollEnabled={true}
+        blurOnSubmit={isPassword}
         style={styles.input}
         editable={!disabled}
         placeholderTextColor="#aaa"

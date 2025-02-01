@@ -64,7 +64,7 @@ const ChatItem = ({
         onPress={(event) => {
           event.stopPropagation();
           router.push({
-            pathname: "/chat",
+            pathname: "/(chat)",
             params: {
               chatId: item._id,
               imgUrl: item.chatPhoto,

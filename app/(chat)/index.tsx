@@ -35,9 +35,13 @@ import {
   truncateText,
 } from "@/utils/helpers";
 import {
+  API_ClearChatHistory,
+  API_DeleteChat,
+  API_DeleteMessage,
   API_GetChatDetails,
   API_GetChatMessages,
   API_SendMessage,
+  API_StarMessage,
 } from "@/network/content";
 import { baseUrl, baseUrls } from "@/network";
 import * as ImagePicker from "expo-image-picker";
@@ -215,6 +219,22 @@ export default function ChatScreen() {
   const handleSendVoiceMessage = () => {
     setMessage(""); // Clear the input after sending
   };
+  const deleteChatById = async (idToDelete: string) => {
+    try {
+      const response = await API_DeleteChat(idToDelete);
+      router.replace("/(tabs)/home");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const clearChatHistory = async (idToDelete: string) => {
+    try {
+      const response = await API_ClearChatHistory(idToDelete);
+      getChatMessages(chatId as string);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const renderMessage = ({
     item,
   }: {
@@ -241,6 +261,26 @@ export default function ChatScreen() {
         Alert.alert("Error", "Failed to copy message.");
       }
     };
+    const handleDeleteMessage = async () => {
+      try {
+        const res = await API_DeleteMessage(chatId as string, item._id);
+        getChatMessages(chatId as string);
+        setOpenMenuId(null);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    const handleStarMessage = async () => {
+      try {
+        const res = await API_StarMessage(chatId as string, item._id);
+        // getChatMessages(chatId as string);
+        setOpenMenuId(null);
+        console.log(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     return (
       <TouchableOpacity onLongPress={() => setOpenMenuId(item._id)}>
         <View
@@ -287,6 +327,8 @@ export default function ChatScreen() {
               setOpenMenuId(visible ? item._id : null)
             }
             onCopy={handleCopy}
+            onDelete={handleDeleteMessage}
+            handleStaredMessages={handleStarMessage}
           />
         </View>
       </TouchableOpacity>
@@ -363,9 +405,10 @@ export default function ChatScreen() {
             />
             <ChatDropdown
               handleStaredMessages={() => null}
-              onClearHistory={() => null}
-              onDelete={() => null}
+              onClearHistory={() => clearChatHistory(chatId as string)}
+              onDelete={() => deleteChatById(chatId as string)}
               onSetDefault={() => null}
+              chatId={chatId as string}
             />
           </View>
         </View>

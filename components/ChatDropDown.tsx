@@ -7,17 +7,20 @@ import DefaultIcon from "@/assets/images/mark-default-xs.svg";
 import TrashIcon from "@/assets/images/trash-dark.svg";
 import StarIcon from "@/assets/images/star.svg";
 import HistoryIcon from "@/assets/images/clear-history.svg";
+import { router } from "expo-router";
 interface ChatDropdownProps {
   onDelete: () => void;
   onSetDefault: () => void;
   onClearHistory: () => void;
   handleStaredMessages: () => void;
+  chatId: string;
 }
 const ChatDropdown: FC<ChatDropdownProps> = ({
   onDelete,
   onSetDefault,
   handleStaredMessages,
   onClearHistory,
+  chatId,
 }) => {
   const [visible, setVisible] = useState(false);
 
@@ -42,7 +45,14 @@ const ChatDropdown: FC<ChatDropdownProps> = ({
       <Menu.Item
         leadingIcon={() => <StarIcon width={18} height={18} />}
         title="Starred Messages"
-        onPress={handleStaredMessages}
+        onPress={() =>
+          router.navigate({
+            pathname: "/(chat)/starredMessages",
+            params: {
+              chatId: chatId,
+            },
+          })
+        }
         style={styles.option}
       />
       <Menu.Item

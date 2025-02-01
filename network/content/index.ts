@@ -38,10 +38,34 @@ export const API_DeleteChat = async (id: string) => {
     method: "DELETE",
   });
 };
+export const API_ClearChatHistory = async (id: string) => {
+  return await axiosInstance({
+    url: `/api/v1/chats/${id}/clear`,
+    method: "POST",
+  });
+};
 export const API_GetChatMessages = async (id: string, page: number = 1) => {
   return await axiosInstance({
     url: `/api/v1/chats/${id}/messages/?limit=20&page=${page}`,
     method: "GET",
+  });
+};
+export const API_GetStarredMessages = async (id: string) => {
+  return await axiosInstance({
+    url: `/api/v1/chats/${id}/starred`,
+    method: "GET",
+  });
+};
+export const API_StarMessage = async (chatID: string, messageID: string) => {
+  return await axiosInstance({
+    url: `/api/v1/chats/${chatID}/messages/${messageID}/star`,
+    method: "PATCH",
+  });
+};
+export const API_DeleteMessage = async (chatID: string, messageID: string) => {
+  return await axiosInstance({
+    url: `/api/v1/chats/${chatID}/messages/${messageID}`,
+    method: "DELETE",
   });
 };
 export const API_SendMessage = async (id: string, data: FormData) => {

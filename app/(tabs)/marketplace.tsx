@@ -216,7 +216,6 @@ const MarketplaceScreen = () => {
             <MarketPlaceItem
               item={item}
               onPress={() => {
-                console.log("first");
                 setChatUrl(item.chatUrl);
                 setChatName(item.name);
                 setImageUrl(`${baseUrl}${item.photo}`);
@@ -241,7 +240,7 @@ const MarketplaceScreen = () => {
         }}
         onPress={() =>
           Linking.openURL(
-            "https://isg43xwbg89z.larksuite.com/share/base/form/shrlgLtjNKkCVWc1pZzc1DPk1Ke"
+            "https://isg43xwbg89z.sg.larksuite.com/share/base/form/shrlg1U3yGE3Eoe0iLMFTJ6vKdB"
           )
         }
       >

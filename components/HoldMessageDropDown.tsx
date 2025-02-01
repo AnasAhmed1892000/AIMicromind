@@ -57,7 +57,7 @@ const HoldMessageDropDown: FC<HoldMessageDropDownProps> = ({
         style={styles.option}
         contentStyle={styles.optionContainer}
       />
-      <Menu.Item
+      {/* <Menu.Item
         title="Share"
         onPress={onClearHistory}
         style={styles.option}
@@ -70,7 +70,7 @@ const HoldMessageDropDown: FC<HoldMessageDropDownProps> = ({
         style={styles.option}
         trailingIcon={() => <ForwardIcon width={18} height={18} />}
         contentStyle={styles.optionContainer}
-      />
+      /> */}
       <Menu.Item
         trailingIcon={() => <TrashIcon width={18} height={18} />}
         onPress={onDelete}
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     marginTop: 35,
     position: "absolute",
     left: "5%",
-    top: "55%",
+    top: "70%",
   },
   option: {
     flexDirection: "row",
