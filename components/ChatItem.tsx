@@ -27,7 +27,7 @@ const ChatItem = ({
   const renderRightActions = () => (
     <View style={styles.rightActions}>
       {/* Mark as Default Button */}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={[styles.actionButton, styles.markDefaultButton]}
         onPress={(event) => {
           event.stopPropagation();
@@ -36,7 +36,7 @@ const ChatItem = ({
         }}
       >
         <MarkDefaultIcon />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Delete Button */}
       <TouchableOpacity
@@ -64,7 +64,7 @@ const ChatItem = ({
         onPress={(event) => {
           event.stopPropagation();
           router.push({
-            pathname: "/(chat)",
+            pathname: "/(chat)/ChatScreen",
             params: {
               chatId: item._id,
               imgUrl: item.chatPhoto,
@@ -227,7 +227,8 @@ const styles = StyleSheet.create({
   },
   deleteBtn: {
     backgroundColor: "#FF3B30", // Red for delete
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
+    // borderTopRightRadius: 10,
+    // borderBottomRightRadius: 10,
+    borderRadius: 10,
   },
 });

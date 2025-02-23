@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'AIMicromind'
+rootProject.name = 'AI MicroMind'
 
 dependencyResolutionManagement {
   versionCatalogs {

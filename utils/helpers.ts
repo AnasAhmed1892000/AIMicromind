@@ -1,8 +1,9 @@
-import { axios, AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { Alert } from "react-native";
+import { showMessage } from "react-native-flash-message";
 import * as FileSystem from "expo-file-system";
+import TErrorResponse from "@/types/data_types/TErrorResponse";
 export async function saveToken(key: string, value: string) {
   try {
     await SecureStore.setItemAsync(key, value);
@@ -43,14 +44,25 @@ export function formatTimeTo12Hour(isoString: string): string {
   return `${hours}:${minutes} ${amPm}`; // Return the formatted time
 }
 export async function handleTokenExpires(error: AxiosError) {
-  console.log(error.response.data.message);
+  const message = (error as TErrorResponse).response?.data.message;
+  showMessage({
+    message: message ? message : "Something went wrong",
+    type: "danger",
+    icon: "danger",
+  });
   if (
     error?.status === 401 &&
-    error?.response?.data?.message !== "Invalid email or password. Try again."
+    (error as TErrorResponse).response?.data?.message !==
+      "Invalid email or password. Try again."
   ) {
     try {
       await deleteToken("token");
-      Alert.alert("Session Expired", error.response.data.message);
+      const message = (error as TErrorResponse).response?.data.message;
+      showMessage({
+        message: message ? message : "Session expired, please login again",
+        type: "danger",
+        icon: "danger",
+      });
       router.replace("/(auth)/login");
     } catch (error) {
       console.error("Error handling expired token:", error);

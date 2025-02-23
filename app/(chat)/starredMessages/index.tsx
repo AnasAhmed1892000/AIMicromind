@@ -12,7 +12,7 @@ import ChatDropdown from "@/components/ChatDropDown";
 import { ActivityIndicator } from "react-native-paper";
 import { FlatList } from "react-native-gesture-handler";
 import { router, useLocalSearchParams } from "expo-router";
-import { TMessage } from "..";
+import { TMessage } from "../chatScreen";
 import GenericFileViewer from "@/components/GenericFileViewer";
 import { formatTimeTo12Hour, getFileType } from "@/utils/helpers";
 import AdjustableImage from "@/components/Base/BaseImage";
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
-    paddingTop: Platform.OS === "ios" ? 50 : 20,
+    paddingTop: Platform.OS === "ios" ? 50 : 40,
     padding: 15,
   },
   headerTitle: {

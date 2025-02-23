@@ -306,6 +306,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "space-between",
     // paddingHorizontal: 20,
+    paddingTop: Platform.OS === "ios" ? 50 : 40,
     paddingVertical: 10,
     backgroundColor: "#fff", // Navbar background color
     shadowColor: "#000", // Shadow color

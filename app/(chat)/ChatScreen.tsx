@@ -3,6 +3,7 @@ import {
   Ionicons,
   MaterialIcons,
   MaterialCommunityIcons,
+  Entypo,
 } from "@expo/vector-icons";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -216,9 +217,6 @@ export default function ChatScreen() {
       setChatURL(res.data.data.chat.chatUrl);
     }
   };
-  const handleSendVoiceMessage = () => {
-    setMessage(""); // Clear the input after sending
-  };
   const deleteChatById = async (idToDelete: string) => {
     try {
       const response = await API_DeleteChat(idToDelete);
@@ -385,7 +383,9 @@ export default function ChatScreen() {
       LoadMoreMessages(chatId as string, page);
     }
   }, [page]);
-
+  useEffect(() => {
+    console.log("last message :", messages[0]);
+  }, [messages]);
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -459,12 +459,24 @@ export default function ChatScreen() {
               <MaterialIcons name="add-a-photo" size={28} />
             </TouchableOpacity>
             {(selectedFileURI || selectedImage) && (
-              <Ionicons
-                name="cloud-done"
-                size={24}
-                color="black"
-                style={{ marginInline: 10 }}
-              />
+              <View style={{ flexDirection: "row" }}>
+                <Ionicons
+                  name="cloud-done"
+                  size={24}
+                  color="black"
+                  style={{ marginInline: 10 }}
+                />
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedFileURI(null);
+                    setSelectedImage(null);
+                  }}
+                  disabled={audioUri || isRecording ? true : false}
+                  style={styles.iconButton}
+                >
+                  <Entypo name="trash" size={24} color="red" />
+                </TouchableOpacity>
+              </View>
             )}
           </View>
           {audioUri || isRecording ? (
@@ -527,7 +539,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
-    paddingTop: Platform.OS === "ios" ? 50 : 20,
+    paddingTop: Platform.OS === "ios" ? 50 : 40,
     padding: 15,
   },
   headerTitle: {

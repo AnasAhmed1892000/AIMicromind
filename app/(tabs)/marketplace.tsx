@@ -314,6 +314,7 @@ const styles = StyleSheet.create({
   navBar: {
     flexDirection: "column",
     justifyContent: "space-between",
+    paddingTop: Platform.OS === "ios" ? 50 : 40,
     // paddingHorizontal: 20,
     paddingVertical: 10,
     backgroundColor: "#fff", // Navbar background color

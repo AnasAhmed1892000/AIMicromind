@@ -36,12 +36,12 @@ const ChatDropdown: FC<ChatDropdownProps> = ({
       style={styles.dropdown}
       contentStyle={styles.dropDownContainer}
     >
-      <Menu.Item
+      {/* <Menu.Item
         leadingIcon={() => <DefaultIcon width={18} height={18} />}
         onPress={onSetDefault}
         title="Set Default"
         style={styles.option}
-      />
+      /> */}
       <Menu.Item
         leadingIcon={() => <StarIcon width={18} height={18} />}
         title="Starred Messages"

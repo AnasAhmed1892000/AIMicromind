@@ -16,6 +16,7 @@ import { Provider as PaperProvider } from "react-native-paper";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { getToken } from "@/utils/helpers";
+import FlashMessage from "react-native-flash-message";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
@@ -36,8 +37,8 @@ export default function RootLayout() {
   // };
   useEffect(() => {
     const prepareApp = async () => {
-      router.replace("/(splash)");
       await SplashScreen.hideAsync();
+      router.replace("/(splash)");
       const token = await getToken("token");
       if (token) {
         router.replace("/(tabs)/home");
@@ -54,7 +55,19 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <PaperProvider>
         <GestureHandlerRootView>
+          <StatusBar />
           <Slot />
+          <FlashMessage
+            testID={"Alert"}
+            accessibilityLabel={"Alert"}
+            accessible={true}
+            position="top"
+            floating
+            duration={5000}
+            statusBarHeight={40}
+            animated={true}
+            animationDuration={200}
+          />
         </GestureHandlerRootView>
       </PaperProvider>
     </ThemeProvider>
