@@ -141,16 +141,16 @@ export default function ProfileScreen() {
   };
   return (
     <BackgroundWrapper>
-      <BaseHeader
-        title="Profile"
-        onBack={() => router.navigate("/(tabs)/home")}
-      />
       <>
         {isLoading ? (
           <ActivityIndicator />
         ) : (
           <>
             <View style={styles.container}>
+              <BaseHeader
+                title="Profile"
+                onBack={() => router.navigate("/(tabs)/home")}
+              />
               <Formik
                 initialValues={{
                   name: profileData?.fullName || "",
@@ -286,8 +286,8 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     flex: 1,
-    padding: 20,
-    paddingTop: Platform.OS === "ios" ? 100 : 0,
+    // padding: 20,
+    paddingTop: Platform.OS === "ios" ? 30 : 0,
   },
   logo: {
     width: "100%",

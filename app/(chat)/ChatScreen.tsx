@@ -23,7 +23,6 @@ import {
 import * as FileSystem from "expo-file-system";
 import { router, useLocalSearchParams } from "expo-router";
 import Send from "@/assets/svgs/send-icon.svg";
-import Record from "@/assets/svgs/record-icon.svg";
 import Attach from "@/assets/svgs/attach-icon.svg";
 import { Audio } from "expo-av";
 import VoiceRecorder from "@/components/VoiceRecorder";
@@ -54,6 +53,7 @@ import ChatDropdown from "@/components/ChatDropDown";
 import HoldMessageDropDown from "@/components/HoldMessageDropDown";
 import AdjustableImage from "@/components/Base/BaseImage";
 import * as Clipboard from "expo-clipboard";
+import UploadImageModal from "@/components/UploadImageModal";
 export interface TMessage {
   type: string;
   _id: string;
@@ -92,6 +92,7 @@ export default function ChatScreen() {
   const [page, setPage] = useState(1);
   const [isMessageOptionsOpen, setIsMessageOptionsOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [visible, setVisible] = useState(false);
   const pickImage = async () => {
     // Request permission to access the media library
     const permissionResult =
@@ -106,7 +107,7 @@ export default function ChatScreen() {
 
     // Launch the image picker
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       quality: 1,
     });
 
@@ -162,7 +163,7 @@ export default function ChatScreen() {
         uri: selectedImage,
         name: "photo.jpg", // Ensure the file has a name
         type: "image/jpeg", // Set MIME type
-      });
+      } as unknown as File);
     }
     if (voiceUri) {
       ReadAsAsync(voiceUri);
@@ -175,14 +176,14 @@ export default function ChatScreen() {
         uri: voiceUri,
         type: `audio/${filetype}`,
         name: filename,
-      });
+      } as unknown as File);
     }
     if (selectedFile) {
       formData.append("file", {
         uri: selectedFileURI,
         name: selectedFile.name,
         type: selectedFile.mimeType,
-      });
+      } as unknown as File);
     }
     setMessage("");
     setSelectedFile(null);
@@ -311,6 +312,20 @@ export default function ChatScreen() {
                     ? styles.userMessageText
                     : styles.supportMessageText),
                 },
+                table: {
+                  borderColor: "#F5EB10",
+                },
+                th: {
+                  borderColor: "#F5EB10",
+                  borderWidth: 1,
+                },
+                td: {
+                  borderColor: "#F5EB10",
+                  borderWidth: 1,
+                },
+                tr: {
+                  borderColor: "#F5EB10",
+                },
               }}
             >
               {item.text}
@@ -383,9 +398,7 @@ export default function ChatScreen() {
       LoadMoreMessages(chatId as string, page);
     }
   }, [page]);
-  useEffect(() => {
-    console.log("last message :", messages[0]);
-  }, [messages]);
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -394,15 +407,17 @@ export default function ChatScreen() {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.navigate("/(tabs)/home")}>
-            <Ionicons name="chevron-back" size={30} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{chatName}</Text>
-          <View style={styles.headerIcons}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity onPress={() => router.navigate("/(tabs)/home")}>
+              <Ionicons name="chevron-back" size={30} color="#000" />
+            </TouchableOpacity>
             <Image
               source={{ uri: `${baseUrl}${imgUrl}` }} // Replace with your logo path
               style={styles.headerIcon}
             />
+          </View>
+          <Text style={styles.headerTitle}>{chatName}</Text>
+          <View style={styles.headerIcons}>
             <ChatDropdown
               handleStaredMessages={() => null}
               onClearHistory={() => clearChatHistory(chatId as string)}
@@ -449,10 +464,10 @@ export default function ChatScreen() {
               disabled={audioUri || isRecording ? true : false}
               style={styles.iconButton}
             >
-              <Attach />
+              <Attach width={32} height={32} />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={pickImage}
+              onPress={() => setVisible(true)}
               disabled={audioUri || isRecording ? true : false}
               style={styles.iconButton}
             >
@@ -488,6 +503,7 @@ export default function ChatScreen() {
               value={message}
               onChangeText={(text) => setMessage(text)}
               placeholderTextColor="#aaa"
+              multiline
             />
           )}
           {/* {audioUri ? <RecordingSection /> : null} */}
@@ -496,7 +512,7 @@ export default function ChatScreen() {
               onPress={() => handleSendMessage()}
               style={styles.iconButton}
             >
-              <Send />
+              <Send width={35} height={35} />
             </TouchableOpacity>
           ) : (
             <>
@@ -522,6 +538,11 @@ export default function ChatScreen() {
           )}
         </View>
       </View>
+      <UploadImageModal
+        onSelectImage={(val) => setSelectedImage(val.uri ?? null)}
+        visible={visible}
+        onDismiss={() => setVisible(false)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -545,6 +566,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    maxWidth: 200,
+    marginRight: 40,
   },
   headerIcon: {
     width: 40,
@@ -608,6 +631,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
     paddingVertical: Platform.OS === "android" ? 0 : 5,
+    maxHeight: 140,
   },
   sendButton: {
     backgroundColor: "#F5EB10",

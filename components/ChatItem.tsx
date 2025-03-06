@@ -155,6 +155,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
+    overflowX: "hidden",
   },
   chatImage: {
     width: 50,

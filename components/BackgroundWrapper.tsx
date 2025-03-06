@@ -1,4 +1,10 @@
-import { StyleSheet, Text, View, ImageBackground } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ImageBackground,
+  Platform,
+} from "react-native";
 import React, { FC } from "react";
 import images from "@/assets/images/images";
 const BackgroundWrapper: FC<React.PropsWithChildren> = ({ children }) => {
@@ -20,6 +26,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     zIndex: -1,
+    // paddingTop: Platform.OS === "ios" ? 50 : 0,
   },
   background: {
     width: "100%",

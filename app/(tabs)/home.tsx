@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: Platform.OS === "ios" ? 50 : 0,
+    paddingTop: Platform.OS === "ios" ? 0 : 0,
     // paddingBottom: Platform.OS === "ios" ? 0 : 50,
   },
   navBar: {

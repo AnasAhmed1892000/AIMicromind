@@ -35,11 +35,11 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/logo@3x.png",
-
           "resizeMode": "center",
           "backgroundColor": "#000000"
         }
-      ]
+      ],
+      "react-native-compressor"
     ],
     "experiments": {
       "typedRoutes": true

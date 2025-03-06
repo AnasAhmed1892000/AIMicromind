@@ -20,11 +20,9 @@ import {
   Alert,
   Button,
 } from "react-native";
-import images from "../../assets/images/images";
 import { router } from "expo-router";
 import Send from "@/assets/svgs/send-icon.svg";
 import Record from "@/assets/svgs/record-icon.svg";
-import Attach from "@/assets/svgs/attach-icon.svg";
 import { Audio } from "expo-av";
 interface VoiceRecorderProps {
   audioUri: string | null;
@@ -53,6 +51,10 @@ const VoiceRecorder: FC<VoiceRecorderProps> = ({
   const handleStartRecording = async () => {
     try {
       const permission = await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
       if (!permission.granted) return;
 
       const { recording } = await Audio.Recording.createAsync(

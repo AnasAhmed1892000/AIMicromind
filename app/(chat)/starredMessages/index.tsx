@@ -12,7 +12,7 @@ import ChatDropdown from "@/components/ChatDropDown";
 import { ActivityIndicator } from "react-native-paper";
 import { FlatList } from "react-native-gesture-handler";
 import { router, useLocalSearchParams } from "expo-router";
-import { TMessage } from "../chatScreen";
+import { TMessage } from "../ChatScreen";
 import GenericFileViewer from "@/components/GenericFileViewer";
 import { formatTimeTo12Hour, getFileType } from "@/utils/helpers";
 import AdjustableImage from "@/components/Base/BaseImage";

@@ -40,6 +40,7 @@ export default function RootLayout() {
       await SplashScreen.hideAsync();
       router.replace("/(splash)");
       const token = await getToken("token");
+      console.log(`retrieved token: ${token}`);
       if (token) {
         router.replace("/(tabs)/home");
         setIsAuthenticated(true);

@@ -51,7 +51,6 @@ const BaseInput: React.FC<CustomInputProps> = ({
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         multiline={!isPassword}
-        numberOfLines={1}
         textAlignVertical="center"
         scrollEnabled={true}
         blurOnSubmit={isPassword}
@@ -86,6 +85,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: "#f7f7f7",
     marginVertical: 8,
+    height: "auto",
   },
   iconContainer: {
     marginLeft: 10,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
     overflow: "hidden",
-    paddingRight: 30,
+    // paddingRight: 30,
   },
 });
 
